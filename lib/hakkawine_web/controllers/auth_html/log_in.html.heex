@@ -1,0 +1,68 @@
+<Layouts.flash_group flash={@flash} />
+
+<div class="max-w-md mx-auto my-12 p-8 bg-base-100 rounded-xl shadow-xl border border-base-200">
+
+  <div class="mb-6 text-center">
+    <h2 class="text-2xl font-bold text-base-content">Welcome Back</h2>
+    <p class="text-xs text-base-content/60 mt-1">Please sign in to your Hakkawine account</p>
+  </div>
+
+  <.form :let={f} for={@changeset} action={~p"/auth/log_in"} class="space-y-4">
+    
+    <div class="form-control w-full">
+      <label class="label" for="login-email">
+        <span class="label-text font-medium">Email Address</span>
+      </label>
+      <input 
+        id="login-email"
+        type="email" 
+        name={f[:email].name}
+        value={f[:email].value}
+        required 
+        placeholder="name@company.com" 
+        class={["input input-bordered w-full focus:outline-primary", f[:email].errors != [] && "input-error"]} 
+      />
+      <div :for={{msg, _opts} <- f[:email].errors} class="label py-1">
+        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+      </div>
+    </div>
+
+    <div class="form-control w-full">
+      <div class="flex justify-between items-center pr-1">
+        <label class="label" for="login-password">
+          <span class="label-text font-medium">Password</span>
+        </label>
+        <.link navigate={~p"/auth/forgot_password"} class="text-xs text-primary hover:underline font-medium">
+          Forgot password?
+        </.link>
+      </div>
+      <input 
+        id="login-password"
+        type="password" 
+        name={f[:password].name}
+        value={f[:password].value}
+        required 
+        placeholder="••••••••" 
+        class={["input input-bordered w-full focus:outline-primary", f[:password].errors != [] && "input-error"]} 
+      />
+      <div :for={{msg, _opts} <- f[:password].errors} class="label py-1">
+        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+      </div>
+    </div>
+
+    <div class="pt-2">
+      <button type="submit" class="btn btn-primary w-full text-base font-medium shadow-sm">
+        Sign In
+      </button>
+    </div>
+
+  </.form>
+
+  <div class="mt-6 pt-4 border-t border-base-200 text-center text-xs text-base-content/70">
+    Don't have an account? 
+    <.link navigate={~p"/auth/register"} class="text-primary font-semibold hover:underline ml-1">
+      Create an account
+    </.link>
+  </div>
+
+</div>

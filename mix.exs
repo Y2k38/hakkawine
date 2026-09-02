@@ -48,7 +48,7 @@ defmodule Hakkawine.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.2.0"},
       {:lazy_html, ">= 0.1.0", only: :test},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:phoenix_live_dashboard, "~> 0.9"},
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.5", runtime: Mix.env() == :dev},
       {:heroicons,
@@ -60,7 +60,7 @@ defmodule Hakkawine.MixProject do
        depth: 1},
       {:daisyui,
        github: "saadeghi/daisyui",
-       tag: "v5.5.20",
+       tag: "v5.7.27",
        sparse: "packages/bundle",
        app: false,
        compile: false,
@@ -72,8 +72,14 @@ defmodule Hakkawine.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"},
-      {:tz, "~> 0.28.2"}
+      {:bandit, "~> 1.8"},
+      {:tz, "~> 0.28.2"},
+      {:ecto_network, "~> 1.6.1"},
+      {:argon2_elixir, "~> 4.0"},
+      {:redix, "~> 1.1"},
+      {:castore, "~> 1.0", runtime: false},
+      {:remote_ip, "~> 1.2"},
+      {:dotenvy, "~> 1.0.0", only: [:dev]}
     ]
   end
 

@@ -1,0 +1,30 @@
+<Layouts.flash_group flash={@flash} />
+
+<div class="max-w-md mx-auto my-12 p-8 bg-base-100 rounded-xl shadow-xl border border-base-200 text-center">
+  
+  <div class="inline-flex items-center justify-center w-16 h-16 bg-success/15 text-success rounded-full mb-6">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  </div>
+
+  <h2 class="text-2xl font-bold text-base-content mb-2">Account Created!</h2>
+  <p class="text-base-content/70 text-sm mb-8 leading-relaxed">
+    Welcome to <span class="font-semibold text-base-content">Hakkawine</span>. Your account has been successfully registered and is ready to use.
+  </p>
+
+  <div class="space-y-3">
+    <.link 
+      navigate={~p"/auth/log_in"} 
+      class="btn btn-primary w-full text-base font-medium shadow-sm">
+      Continue to Login
+    </.link>
+
+    <.link 
+      navigate={~p"/"} 
+      class="btn btn-ghost btn-sm w-full text-base-content/60 hover:bg-base-200">
+      Back to Home
+    </.link>
+  </div>
+
+</div>

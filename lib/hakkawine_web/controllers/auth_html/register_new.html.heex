@@ -1,0 +1,171 @@
+<Layouts.flash_group flash={@flash} />
+
+<div class="max-w-md mx-auto my-8 p-6 bg-base-100 rounded-xl shadow-xl border border-base-200">
+  <h2 class="text-2xl font-bold text-base-content mb-6">Create an Account</h2>
+
+  <.form :let={f} for={@changeset} action={~p"/auth/register"} class="space-y-4">
+    
+    <div class="form-control w-full">
+      <label class="label" for="email">
+        <span class="label-text font-medium">Email Address</span>
+      </label>
+      <input 
+        id="email"
+        type="email" 
+        name={f[:email].name}
+        value={f[:email].value}
+        required 
+        placeholder="name@company.com" 
+        class={["input input-bordered w-full focus:outline-primary", f[:email].errors != [] && "input-error"]} 
+      />
+      <div :for={{msg, _opts} <- f[:email].errors} class="label py-1">
+        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+      </div>
+    </div>
+
+    <div class="hidden" aria-hidden="true">
+      <input 
+        type="text" 
+        name={f[:phone_number].name} 
+        tabindex="-1" 
+        autocomplete="off" 
+      />
+    </div>
+
+    <div class="form-control w-full">
+      <label class="label" for="verification-code">
+        <span class="label-text font-medium">Verification Code</span>
+      </label>
+      <div class="join w-full">
+        <div class="grow min-w-0">
+          <input 
+            id="verification-code"
+            type="text" 
+            name={f[:verification_code].name}
+            value={f[:verification_code].value}
+            autocomplete="one-time-code" 
+            required 
+            placeholder="6-digit code" 
+            class={["input input-bordered join-item w-full focus:outline-primary", f[:verification_code].errors != [] && "input-error"]} 
+          />
+        </div>
+        <div class="shrink-0">
+          <button 
+            type="button" 
+            id="send-code-btn"
+            class="btn btn-primary join-item whitespace-nowrap">
+            Get Code
+          </button>
+        </div>
+      </div>
+      <div :for={{msg, _opts} <- f[:verification_code].errors} class="label py-1">
+        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+      </div>
+    </div>
+
+    <div class="form-control w-full">
+      <label class="label" for="password">
+        <span class="label-text font-medium">Password</span>
+      </label>
+      <input 
+        id="password"
+        type="password" 
+        name={f[:password].name}
+        value={f[:password].value}
+        required 
+        placeholder="••••••••" 
+        class={["input input-bordered w-full focus:outline-primary", f[:password].errors != [] && "input-error"]} 
+      />
+      <div :for={{msg, _opts} <- f[:password].errors} class="label py-1">
+        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+      </div>
+    </div>
+
+    <div class="pt-2">
+      <button type="submit" class="btn btn-primary w-full text-base">
+        Submit
+      </button>
+    </div>
+
+  </.form>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const sendCodeBtn = document.getElementById("send-code-btn");
+
+    if (!sendCodeBtn) return;
+
+    let timer = null;
+    let countdown = 60;
+
+    sendCodeBtn.addEventListener("click", async () => {
+      const emailInput = document.getElementById("email");
+      
+      if (!emailInput) {
+        console.error("Target #email element not found in DOM");
+        return;
+      }
+
+      const email = emailInput.value.trim();
+
+      if (!email || !email.includes("@")) {
+        alert("Please enter a valid email address first.");
+        emailInput.classList.add("input-error");
+        emailInput.focus();
+        return;
+      }
+      emailInput.classList.remove("input-error");
+
+      sendCodeBtn.disabled = true;
+      sendCodeBtn.innerText = "Sending...";
+
+      try {
+        const response = await fetch("/auth/send-code", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": document.querySelector("meta[name='csrf-token']")?.getAttribute("content")
+          },
+          body: JSON.stringify({ email: email })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("Verification code sent! Please check your inbox.");
+          startCountdown();
+        } else {
+          alert(data.error || "Failed to send code. Please try again later.");
+          resetButton();
+        }
+      } catch (error) {
+        console.error("Error sending code:", error);
+        alert("Network error. Please try again later.");
+        resetButton();
+      }
+    });
+
+    function startCountdown() {
+      countdown = 60;
+      sendCodeBtn.disabled = true;
+      sendCodeBtn.innerText = `Resend in ${countdown}s`;
+
+      timer = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+          sendCodeBtn.innerText = `Resend in ${countdown}s`;
+        } else {
+          clearInterval(timer);
+          resetButton();
+        }
+      }, 1000);
+    }
+
+    function resetButton() {
+      if (timer) clearInterval(timer);
+      sendCodeBtn.disabled = false;
+      sendCodeBtn.innerText = "Get Code";
+    }
+  });
+</script>

@@ -1,6 +1,10 @@
 defmodule HakkawineWeb.Router do
   use HakkawineWeb, :router
 
+  alias HakkawineWeb.Plugs.FetchCurrentUser
+  alias HakkawineWeb.Plugs.EnsureAuthenticated
+  alias HakkawineWeb.Plugs.RedirectIfAuthenticated
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,10 +12,8 @@ defmodule HakkawineWeb.Router do
     plug :put_root_layout, html: {HakkawineWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-  end
 
-  pipeline :api do
-    plug :accepts, ["json"]
+    plug FetchCurrentUser
   end
 
   scope "/", HakkawineWeb do
@@ -20,18 +22,30 @@ defmodule HakkawineWeb.Router do
     get "/", PageController, :home
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", HakkawineWeb do
-  #   pipe_through :api
-  # end
+  scope "/auth", HakkawineWeb do
+    pipe_through [:browser, RedirectIfAuthenticated]
 
-  # Enable LiveDashboard and Swoosh mailbox preview in development
+    get "/register", AuthController, :register_page
+    post "/send-code", AuthController, :send_code
+    post "/register", AuthController, :register
+
+    get "/log_in", AuthController, :log_in_page
+    post "/log_in", AuthController, :log_in
+
+    get "/forgot_password", AuthController, :forgot_password_page
+    post "/send_reset_link", AuthController, :send_reset_link
+
+    get "/reset_password", AuthController, :reset_password_page
+    post "/reset_password", AuthController, :reset_password
+  end
+
+  scope "/auth", HakkawineWeb do
+    pipe_through [:browser, EnsureAuthenticated]
+
+    delete "/log_out", AuthController, :log_out
+  end
+
   if Application.compile_env(:hakkawine, :dev_routes) do
-    # If you want to use the LiveDashboard in production, you should put
-    # it behind authentication and allow only admins to access it.
-    # If your application does not have an admins-only section yet,
-    # you can use Plug.BasicAuth to set up some basic authentication
-    # as long as you are also using SSL (which you should anyway).
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do

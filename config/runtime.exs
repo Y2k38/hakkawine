@@ -1,5 +1,14 @@
 import Config
 
+if config_env() == :dev do
+  env_path = Path.expand(".env")
+
+  if File.exists?(env_path) do
+    parsed_vars = Dotenvy.source!([env_path])
+    System.put_env(parsed_vars)
+  end
+end
+
 defmodule Util do
   def random_string(length) do
     :crypto.strong_rand_bytes(length) |> Base.encode64() |> binary_part(0, length)
@@ -135,6 +144,12 @@ case System.get_env("DATABASE_SSL") do
     config :hakkawine, Hakkawine.Repo, ssl: false
 end
 
+config :hakkawine, :redis,
+  host: System.get_env("REDIS_HOST") || "localhost",
+  port: String.to_integer(System.get_env("REDIS_PORT") || "6379"),
+  password: System.get_env("REDIS_PASSWORD") || nil,
+  database: String.to_integer(System.get_env("REDIS_DB") || "0")
+
 if System.get_env("DATABASE_IPV6") == "true" do
   config :hakkawine, Hakkawine.Repo, socket_options: [:inet6]
 end
@@ -148,7 +163,8 @@ config :hakkawine, HakkawineWeb.Endpoint,
   url: [
     host: System.get_env("VIRTUAL_HOST", "localhost"),
     path: System.get_env("URL_PATH", "/"),
-    port: 80
+    scheme: "https",
+    port: 443
   ],
   secret_key_base: System.get_env("SECRET_KEY_BASE", Util.random_string(64)),
   live_view: [signing_salt: System.get_env("SIGNING_SALT", Util.random_string(8))],
