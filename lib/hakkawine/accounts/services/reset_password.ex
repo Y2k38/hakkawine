@@ -17,10 +17,13 @@ defmodule Hakkawine.Accounts.Services.ResetPassword do
 
     with :allow <- RateLimiter.allow?(email_3m_key, 1, 120_000),
          :allow <- RateLimiter.allow?(email_24h_key, 5, 86_400_000),
-         {:ok, _} <- Accounts.ensure_user_exists(email),
+         %UserAccount{} <- Accounts.get_user_by_email(email),
          {:ok, _} <- cache_reset_password_token(email, token),
          {:ok, _} <- deliver_reset_password_email(email, token) do
       {:ok, :sent}
+    else
+      nil -> {:error, :user_not_exists}
+      error -> error
     end
   end
 
@@ -65,10 +68,13 @@ defmodule Hakkawine.Accounts.Services.ResetPassword do
     with :allow <- RateLimiter.allow?(token_15m_key, 3, 900_000),
          :allow <- RateLimiter.allow?(token_24h_key, 10, 86_400_000),
          {:ok, email} <- verify_and_consume_reset_token(token),
-         {:ok, user_account} <- Accounts.ensure_user_exists(email) do
+         %UserAccount{} = user_account <- Accounts.get_user_by_email(email) do
       user_account
       |> UserAccount.reset_password_changeset(attrs)
       |> Repo.update()
+    else
+      nil -> {:error, :user_not_exists}
+      error -> error
     end
   end
 
@@ -76,13 +82,13 @@ defmodule Hakkawine.Accounts.Services.ResetPassword do
     key = "auth:reset_password:token:#{token}"
 
     case Redix.command(:redix, ["GETDEL", key]) do
-      {:ok, nil} -> 
+      {:ok, nil} ->
         {:error, :invalid_or_expired_token}
 
-      {:ok, email} when is_binary(email) -> 
+      {:ok, email} when is_binary(email) ->
         {:ok, email}
 
-      {:error, reason} -> 
+      {:error, reason} ->
         {:error, {:redis_error, reason}}
     end
   end

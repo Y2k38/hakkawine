@@ -71,7 +71,7 @@ defmodule Hakkawine.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.2.0"},
+      {:dns_cluster, "~> 0.3"},
       {:bandit, "~> 1.8"},
       {:tz, "~> 0.28.2"},
       {:ecto_network, "~> 1.6.1"},
@@ -79,7 +79,9 @@ defmodule Hakkawine.MixProject do
       {:redix, "~> 1.1"},
       {:castore, "~> 1.0", runtime: false},
       {:remote_ip, "~> 1.2"},
-      {:dotenvy, "~> 1.0.0", only: [:dev]}
+      {:dotenvy, "~> 1.0", only: [:dev]},
+      {:oban, "~> 2.23"},
+      {:igniter, "~> 0.5", only: [:dev]}
     ]
   end
 

@@ -8,14 +8,16 @@ defmodule Hakkawine.Accounts.UserAccount do
     field :status, Ecto.Enum, values: [:unverified, :active, :suspended, :deactivating], default: :unverified
     field :email, :string
     field :password_hash, :string
+    field :language, :string, default: "en"
     field :email_verified_at, :utc_datetime_usec
     field :password_updated_at, :utc_datetime_usec
-    field :telegram_id, :integer
+    field :telegram_chat_id, :integer
     field :invited_by, :integer
     field :invite_code, :string
     field :invite_count, :integer, default: 0
     field :suspended_until, :utc_datetime_usec
 
+    # Virtual field used in forms
     field :password, :string, virtual: true
     field :verification_code, :string, virtual: :true
     field :captcha_token, :string, virtual: true
@@ -24,8 +26,7 @@ defmodule Hakkawine.Accounts.UserAccount do
 
     timestamps(
       type: :utc_datetime_usec,
-      inserted_at: :created_at,
-      updated_at: :updated_at
+      inserted_at: :created_at
     )
   end
 

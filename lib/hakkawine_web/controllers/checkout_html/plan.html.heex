@@ -1,0 +1,262 @@
+<% 
+  # 1. Filter prices
+  filtered_prices = 
+    if to_string(@plan.type) == "one_time" do
+      Enum.filter(@plan.prices, fn p -> to_string(p.renew_interval) == "none" end)
+    else
+      Enum.filter(@plan.prices, fn p -> to_string(p.renew_interval) != "none" end)
+    end
+
+  # 2. Find default price
+  has_default = Enum.any?(filtered_prices, & &1.is_default)
+  default_price = Enum.find(filtered_prices, & &1.is_default) || List.first(filtered_prices)
+  selected_amount = if default_price, do: default_price.amount, else: 0
+
+  # 3. Helper for months calculation
+  months_count = fn
+    "month" -> 1
+    "quarter" -> 3
+    "half_year" -> 6
+    "year" -> 12
+    "two_years" -> 24
+    "three_years" -> 36
+    _ -> 1
+  end
+
+  monthly_price_item = Enum.find(filtered_prices, fn p -> to_string(p.renew_interval) == "month" end)
+  base_monthly_price = if monthly_price_item, do: Decimal.to_float(monthly_price_item.amount), else: nil
+%>
+
+<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl font-black tracking-wider text-base-content">
+        <%= @brand_name || "LOGO" %>
+      </span>
+      <span class="text-xl font-bold text-base-content/80">Purchase Plan</span>
+    </div>
+    <p class="text-xs text-base-content/50 mt-1">
+      Have questions about purchasing? Contact customer support anytime.
+    </p>
+  </div>
+
+  <form action={~p"/checkout/plans/#{@plan.id}"} method="post">
+    <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left Column -->
+      <div class="lg:col-span-7 space-y-6">
+        <!-- 1. Duration Selection -->
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="badge badge-warning font-bold px-3 py-3 rounded-lg text-sm">
+              <%= @plan.name %>
+            </span>
+            <%= if to_string(@plan.type) == "one_time" do %>
+              <span class="badge badge-outline rounded-full text-xs">Data Top-up Package</span>
+            <% else %>
+              <span class="badge badge-success badge-outline rounded-full text-xs">Renewable</span>
+              <span class="badge badge-success badge-outline rounded-full text-xs">Monthly Reset</span>
+            <% end %>
+          </div>
+
+          <h3 class="text-lg font-bold text-base-content/90 mb-3">Select Billing Cycle</h3>
+
+          <!-- Cards Grid -->
+          <div class="grid grid-cols-3 gap-3">
+            <%= for {price, index} <- Enum.with_index(filtered_prices) do %>
+              <% 
+                interval_str = to_string(price.renew_interval)
+                m_count = months_count.(interval_str)
+                price_amount = Decimal.to_float(price.amount)
+                avg_monthly = price_amount / m_count
+
+                savings_percent = 
+                  if base_monthly_price && base_monthly_price > 0 && avg_monthly < base_monthly_price do
+                    round((1 - (avg_monthly / base_monthly_price)) * 100)
+                  else
+                    0
+                  end
+
+                is_checked = if has_default, do: price.is_default, else: index == 0
+              %>
+
+              <label class={"relative cursor-pointer border rounded-2xl p-3.5 flex flex-col justify-between transition-all duration-150 #{if is_checked, do: "border-warning bg-warning/10 shadow-sm", else: "border-base-200 bg-base-100 hover:border-base-300"}"}>
+                <!-- Top-Right Discount Badge -->
+                <%= if savings_percent > 0 do %>
+                  <span class="absolute -top-2 -right-2 badge badge-success badge-xs font-bold text-[10px] px-2 py-1.5 shadow-sm">
+                    Save <%= savings_percent %>%
+                  </span>
+                <% end %>
+
+                <input
+                  type="radio"
+                  name="product_price_id"
+                  value={price.id}
+                  checked={is_checked}
+                  class="hidden"
+                />
+
+                <div class="flex items-center justify-between gap-1">
+                  <span class="font-bold text-sm text-base-content capitalize">
+                    <%= price.renew_interval %>
+                  </span>
+                </div>
+
+                <div class="mt-2">
+                  <div class="text-base font-black text-base-content">
+                    ¥<%= format_amount(price.amount) %>
+                  </div>
+                  <%= if m_count > 1 do %>
+                    <div class="text-[11px] text-base-content/50 mt-0.5">
+                      ≈ ¥<%= :erlang.float_to_binary(avg_monthly, [decimals: 2]) %>/mo
+                    </div>
+                  <% end %>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- 2. Payment Method -->
+        <div>
+          <h3 class="text-lg font-bold text-base-content/90 mb-3">Payment Method</h3>
+
+          <div class="space-y-2.5">
+            <!-- Account Balance -->
+            <label class="flex items-center justify-between border border-base-200 rounded-2xl p-4 cursor-pointer bg-base-100 hover:border-base-300">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center font-bold text-sm">
+                  ¥
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-base-content">Account Balance</div>
+                  <div class="text-xs text-base-content/50 mt-0.5">
+                    Current Balance: ¥<%= format_amount(@user_balance) %> · 0% Fee · Instant
+                  </div>
+                </div>
+              </div>
+              <input type="radio" name="payment_method" value="balance" checked class="radio radio-warning radio-sm" />
+            </label>
+
+            <!-- Alipay -->
+            <label class="flex items-center justify-between border border-base-200 rounded-2xl p-4 cursor-pointer bg-base-100 hover:border-base-300">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-info text-info-content flex items-center justify-center font-bold text-xs">
+                  Ali
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-base-content">Alipay</div>
+                  <div class="text-xs text-base-content/50 mt-0.5">Limit ¥500 per transaction (incl. fee)</div>
+                </div>
+              </div>
+              <input type="radio" name="payment_method" value="alipay" class="radio radio-warning radio-sm" />
+            </label>
+
+            <!-- WeChat Pay -->
+            <label class="flex items-center justify-between border border-base-200 rounded-2xl p-4 cursor-pointer bg-base-100 hover:border-base-300">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-success text-success-content flex items-center justify-center font-bold text-xs">
+                  WX
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-base-content">WeChat Pay</div>
+                  <div class="text-xs text-base-content/50 mt-0.5">Limit ¥1000 per transaction (incl. fee)</div>
+                </div>
+              </div>
+              <input type="radio" name="payment_method" value="wechat" class="radio radio-warning radio-sm" />
+            </label>
+
+            <!-- USDT -->
+            <label class="flex items-center justify-between border border-base-200 rounded-2xl p-4 cursor-pointer bg-base-100 hover:border-base-300">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-accent text-accent-content flex items-center justify-center font-bold text-xs">
+                  ₮
+                </div>
+                <div>
+                  <div class="font-bold text-sm text-base-content">USDT (TRC20)</div>
+                  <div class="text-xs text-base-content/50 mt-0.5">
+                    Transfer via TRC20 network. Please pay the exact USDT amount shown.
+                  </div>
+                </div>
+              </div>
+              <input type="radio" name="payment_method" value="usdt" class="radio radio-warning radio-sm" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="lg:col-span-5 space-y-4">
+        <!-- Notice Banner -->
+        <div class="bg-warning/10 border border-warning/20 rounded-2xl p-4 text-xs text-base-content/70 leading-relaxed">
+          Prices are estimated. Final amount subject to order creation. No processing fee for balance deductions.
+        </div>
+
+        <!-- Order Summary Card -->
+        <div class="border border-base-200 rounded-2xl p-5 bg-base-100 space-y-4 shadow-sm">
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between items-center text-base-content/60">
+              <span>Subtotal</span>
+              <span class="font-semibold text-base-content">¥<%= format_amount(selected_amount) %></span>
+            </div>
+
+            <div class="flex justify-between items-center text-base-content/60">
+              <span>Balance Deduction</span>
+              <span class="font-semibold text-success">-¥<%= format_amount(selected_amount) %></span>
+            </div>
+
+            <div class="flex justify-between items-center text-base-content/60">
+              <span>Payment Fee</span>
+              <span class="font-semibold text-base-content">¥0.00</span>
+            </div>
+
+            <div class="pt-2 flex justify-between items-baseline">
+              <span class="font-bold text-base text-base-content">Total Due</span>
+              <span class="text-2xl font-black text-warning">¥0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="space-y-3">
+          <div class="text-[11px] text-base-content/50 text-center">
+            By placing an order, you agree to the <a href="#" class="underline">Terms of Service</a>
+          </div>
+
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-bold text-base-content/70">Use Balance</span>
+            <input type="checkbox" name="use_balance" value="true" checked class="toggle toggle-warning toggle-sm" />
+          </div>
+
+          <button type="submit" name="action" value="create_order" class="btn btn-warning btn-block rounded-2xl text-base">
+            Confirm Order
+          </button>
+
+          <button type="button" class="btn btn-ghost btn-block rounded-2xl text-base-content/70">
+            Cancel
+          </button>
+
+          <!-- Hidden Coupon Input via Native HTML details/summary -->
+          <details class="text-center group">
+            <summary class="text-xs font-medium text-warning hover:underline cursor-pointer list-none inline-flex items-center gap-1">
+              Have a promo code? →
+            </summary>
+            <div class="mt-3 join w-full">
+              <input 
+                type="text" 
+                name="coupon_code" 
+                placeholder="Enter promo code" 
+                class="input input-bordered input-sm join-item w-full text-xs focus:outline-none" 
+              />
+              <button type="submit" name="action" value="apply_coupon" class="btn btn-warning btn-sm join-item text-xs">
+                Apply
+              </button>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

@@ -15,10 +15,13 @@ defmodule Hakkawine.Accounts.Services.Registration do
 
     with :allow <- RateLimiter.allow?(email_60s_key, 1, 60_000),
          :allow <- RateLimiter.allow?(email_24h_key, 5, 86_400_000),
-         :ok <- Accounts.ensure_user_not_exists(email),
+         nil    <- Accounts.get_user_by_email(email),
          {:ok, _} <- cache_verification_code(email, code),
          {:ok, _} <- deliver_verification_email(email, code) do
       {:ok, :sent}
+    else
+      %UserAccount{} -> {:error, :user_already_exists}
+      error -> error
     end
   end
 
@@ -68,17 +71,24 @@ defmodule Hakkawine.Accounts.Services.Registration do
   end
 
   defp do_create_customer(attrs, attempts_left) when attempts_left > 0 do
-    result =
+    result = Repo.transaction(fn ->
       %UserAccount{}
       |> UserAccount.registration_changeset(attrs)
       |> Ecto.Changeset.put_change(:account_type, :customer)
       |> Ecto.Changeset.put_change(:status, :active)
       |> Ecto.Changeset.put_change(:email_verified_at, DateTime.utc_now())
       |> Repo.insert()
+      |> case do
+        {:ok, user_account} ->
+          user_account
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
 
     case result do
-      {:ok, user} ->
-        {:ok, user}
+      {:ok, user_account} ->
+        {:ok, user_account}
 
       {:error, %Ecto.Changeset{errors: [invite_code: {_, [constraint: :unique, constraint_name: _]}]}} ->
         do_create_customer(attrs, attempts_left - 1)

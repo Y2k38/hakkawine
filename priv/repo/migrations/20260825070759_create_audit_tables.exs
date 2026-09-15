@@ -1,4 +1,4 @@
-defmodule Hakkawine.Repo.Migrations.CreateUserAuditLogs do
+defmodule Hakkawine.Repo.Migrations.CreateAuditTables do
   use Ecto.Migration
 
   def change do

@@ -31,6 +31,7 @@ end
 seeds_dir = Path.join(__DIR__, "seeds")
 
 seed_files = [
+  "settings.exs",
   "user_audit_actions.exs",
 ]
 

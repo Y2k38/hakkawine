@@ -31,15 +31,15 @@ defmodule Hakkawine.Accounts.Services.Login do
   end
 
   defp authenticate_user(email, password) do
-    case Accounts.ensure_user_exists(email) do
-      {:ok, %UserAccount{} = user_account} ->
+    case Accounts.get_user_by_email(email) do
+      %UserAccount{} = user_account ->
         if Argon2.verify_pass(password, user_account.password_hash) do
           {:ok, user_account}
         else
           {:error, :invalid_credentials}
         end
 
-      {:error, :user_not_exists} ->
+      nil ->
         Argon2.no_user_verify(password)
         {:error, :invalid_credentials}
     end

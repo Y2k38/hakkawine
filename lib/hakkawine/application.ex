@@ -19,6 +19,9 @@ defmodule Hakkawine.Application do
       Hakkawine.Repo,
       {DNSCluster, query: Application.get_env(:hakkawine, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Hakkawine.PubSub},
+
+      {Task, fn -> Hakkawine.System.load_settings!() end},
+
       # Start a worker by calling: Hakkawine.Worker.start_link(arg)
       # {Hakkawine.Worker, arg},
       # Start to serve requests, typically the last entry

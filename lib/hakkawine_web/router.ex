@@ -20,6 +20,9 @@ defmodule HakkawineWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    get "/plan/list", PlanController, :list
+    get "/checkout/plans/:code", CheckoutController, :plan_page
   end
 
   scope "/auth", HakkawineWeb do

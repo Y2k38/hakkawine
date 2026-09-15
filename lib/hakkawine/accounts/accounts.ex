@@ -1,4 +1,7 @@
 defmodule Hakkawine.Accounts do
+  import Ecto.Query
+  import Hakkawine.Repo.Query
+
   alias Hakkawine.Repo
   alias Hakkawine.Accounts.UserAccount
   alias Hakkawine.Accounts.Services.Registration
@@ -26,21 +29,17 @@ defmodule Hakkawine.Accounts do
   defdelegate verify_reset_token(token), to: ResetPassword
   defdelegate reset_password(attrs \\ %{}), to: ResetPassword
 
-  def get_user(user_id) do
-    Repo.get_by(UserAccount, id: user_id)
+  def get_user(user_id, opts \\ []) do
+    UserAccount
+    |> where(id: ^user_id)
+    |> apply_opts(opts)
+    |> Repo.one()
   end
 
-  def ensure_user_exists(email) do
-    case Repo.get_by(UserAccount, email: email) do
-      %UserAccount{} = user_account -> {:ok, user_account}
-      nil -> {:error, :user_not_exists}
-    end
-  end
-
-  def ensure_user_not_exists(email) do
-    case Repo.get_by(UserAccount, email: email) do
-      nil -> :ok
-      %UserAccount{} -> {:error, :user_already_exists}
-    end
+  def get_user_by_email(email, opts \\ []) do
+    UserAccount
+    |> where(email: ^email)
+    |> apply_opts(opts)
+    |> Repo.one()
   end
 end
