@@ -20,9 +20,6 @@ defmodule HakkawineWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-
-    get "/plan/list", PlanController, :list
-    get "/checkout/plans/:code", CheckoutController, :plan_page
   end
 
   scope "/auth", HakkawineWeb do
@@ -46,6 +43,34 @@ defmodule HakkawineWeb.Router do
     pipe_through [:browser, EnsureAuthenticated]
 
     delete "/log_out", AuthController, :log_out
+  end
+
+  scope "/", HakkawineWeb do
+    pipe_through [:browser, EnsureAuthenticated]
+
+    get "/plan/list", PlanController, :index
+
+    get "/checkout/sub/new", CheckoutController, :new_sub
+    get "/checkout/sub/renew", CheckoutController, :renew_sub
+    get "/checkout/sub/upgrade", CheckoutController, :upgrade_sub
+    get "/checkout/sub/reset-quota", CheckoutController, :reset_quota
+    get "/checkout/addon", CheckoutController, :addon
+    get "/checkout/topup", CheckoutController, :topup
+
+    post "/order/create", OrderController, :create
+    get "/order/status", OrderController, :status
+    get "/order/success", OrderController, :success
+    get "/order/cancel", OrderController, :cancel
+  end
+
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
+  scope "/api/v1", HakkawineWeb.Api.V1, as: :api_v1 do
+    pipe_through :api
+
+    post "/payment/notify", PaymentController, :notify
   end
 
   if Application.compile_env(:hakkawine, :dev_routes) do

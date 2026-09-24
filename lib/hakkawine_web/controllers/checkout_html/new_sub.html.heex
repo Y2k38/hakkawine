@@ -1,30 +1,60 @@
+<Layouts.flash_group flash={@flash} />
 <% 
-  # 1. Filter prices
+  # Safe float conversion supporting Decimal, Float, Integer, String, and nil
+  to_float = fn
+    nil -> 0.0
+    %Decimal{} = d -> Decimal.to_float(d)
+    val when is_float(val) -> val
+    val when is_integer(val) -> val * 1.0
+    val when is_binary(val) -> 
+      case Float.parse(val) do
+        {f, _} -> f
+        :error -> 0.0
+      end
+    _ -> 0.0
+  end
+
+  # 1. Filter prices based on plan charge type
+  is_one_time = to_string(@plan.type) == "one_time"
+
   filtered_prices = 
-    if to_string(@plan.type) == "one_time" do
-      Enum.filter(@plan.prices, fn p -> to_string(p.renew_interval) == "none" end)
+    if is_one_time do
+      Enum.filter(@plan.prices, fn p -> to_string(p.type) in ["onetime", "reset"] end)
     else
-      Enum.filter(@plan.prices, fn p -> to_string(p.renew_interval) != "none" end)
+      Enum.filter(@plan.prices, fn p -> to_string(p.type) not in ["onetime", "reset"] end)
     end
 
-  # 2. Find default price
+  # 2. Default price selection and numeric setup
   has_default = Enum.any?(filtered_prices, & &1.is_default)
   default_price = Enum.find(filtered_prices, & &1.is_default) || List.first(filtered_prices)
-  selected_amount = if default_price, do: default_price.amount, else: 0
+  selected_amount = if default_price, do: to_float.(default_price.amount), else: 0.0
+  user_balance = to_float.(@user_balance)
 
-  # 3. Helper for months calculation
+  # 3. Months calculation function
   months_count = fn
-    "month" -> 1
-    "quarter" -> 3
-    "half_year" -> 6
-    "year" -> 12
-    "two_years" -> 24
-    "three_years" -> 36
+    "monthly" -> 1
+    "quarterly" -> 3
+    "half_yearly" -> 6
+    "yearly" -> 12
     _ -> 1
   end
 
-  monthly_price_item = Enum.find(filtered_prices, fn p -> to_string(p.renew_interval) == "month" end)
-  base_monthly_price = if monthly_price_item, do: Decimal.to_float(monthly_price_item.amount), else: nil
+  # 4. Map billing cycle string (only monthly, quarterly, half_yearly, yearly directly allowed, rest mapped to one_time)
+  map_billing_cycle = fn price_type ->
+    if is_one_time do
+      "one_time"
+    else
+      type_str = to_string(price_type)
+      if type_str in ["monthly", "quarterly", "half_yearly", "yearly"] do
+        type_str
+      else
+        "one_time"
+      end
+    end
+  end
+
+  monthly_price_item = Enum.find(filtered_prices, fn p -> to_string(p.type) == "monthly" end)
+  base_monthly_price = if monthly_price_item, do: to_float.(monthly_price_item.amount), else: nil
 %>
 
 <div class="max-w-5xl mx-auto py-8 px-4 sm:px-6">
@@ -41,8 +71,12 @@
     </p>
   </div>
 
-  <form action={~p"/checkout/plans/#{@plan.id}"} method="post">
+  <form id="checkout-form" action={~p"/order/create"} method="post">
     <input type="hidden" name="_csrf_token" value={get_csrf_token()} />
+    <input type="hidden" name="fallback_url" value={@conn.request_path <> if(@conn.query_string != "", do: "?" <> @conn.query_string, else: "")} />
+    <input type="hidden" name="idempotency_key" value={@idempotency_key}>
+    <input type="hidden" name="order_type" value="plan_purchase">
+    <input type="hidden" name="target_product_code" value={@plan.code}>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Left Column -->
@@ -53,7 +87,7 @@
             <span class="badge badge-warning font-bold px-3 py-3 rounded-lg text-sm">
               <%= @plan.name %>
             </span>
-            <%= if to_string(@plan.type) == "one_time" do %>
+            <%= if is_one_time do %>
               <span class="badge badge-outline rounded-full text-xs">Data Top-up Package</span>
             <% else %>
               <span class="badge badge-success badge-outline rounded-full text-xs">Renewable</span>
@@ -67,10 +101,11 @@
           <div class="grid grid-cols-3 gap-3">
             <%= for {price, index} <- Enum.with_index(filtered_prices) do %>
               <% 
-                interval_str = to_string(price.renew_interval)
-                m_count = months_count.(interval_str)
-                price_amount = Decimal.to_float(price.amount)
+                type_str = to_string(price.type)
+                m_count = months_count.(type_str)
+                price_amount = to_float.(price.amount)
                 avg_monthly = price_amount / m_count
+                cycle_value = map_billing_cycle.(price.type)
 
                 savings_percent = 
                   if base_monthly_price && base_monthly_price > 0 && avg_monthly < base_monthly_price do
@@ -80,9 +115,11 @@
                   end
 
                 is_checked = if has_default, do: price.is_default, else: index == 0
+                card_class = "relative cursor-pointer border rounded-2xl p-3.5 flex flex-col justify-between transition-all duration-150 " <>
+                             if(is_checked, do: "border-warning bg-warning/10 shadow-sm", else: "border-base-200 bg-base-100 hover:border-base-300")
               %>
 
-              <label class={"relative cursor-pointer border rounded-2xl p-3.5 flex flex-col justify-between transition-all duration-150 #{if is_checked, do: "border-warning bg-warning/10 shadow-sm", else: "border-base-200 bg-base-100 hover:border-base-300"}"}>
+              <label class={card_class}>
                 <!-- Top-Right Discount Badge -->
                 <%= if savings_percent > 0 do %>
                   <span class="absolute -top-2 -right-2 badge badge-success badge-xs font-bold text-[10px] px-2 py-1.5 shadow-sm">
@@ -92,25 +129,26 @@
 
                 <input
                   type="radio"
-                  name="product_price_id"
-                  value={price.id}
+                  name="billing_cycle"
+                  value={cycle_value}
+                  data-amount={price_amount}
                   checked={is_checked}
-                  class="hidden"
+                  class="price-radio hidden"
                 />
 
                 <div class="flex items-center justify-between gap-1">
                   <span class="font-bold text-sm text-base-content capitalize">
-                    <%= price.renew_interval %>
+                    <%= price.type %>
                   </span>
                 </div>
 
                 <div class="mt-2">
                   <div class="text-base font-black text-base-content">
-                    ¥<%= format_amount(price.amount) %>
+                    <%= currency_symbol() %><%= format_amount(price.amount) %>
                   </div>
                   <%= if m_count > 1 do %>
                     <div class="text-[11px] text-base-content/50 mt-0.5">
-                      ≈ ¥<%= :erlang.float_to_binary(avg_monthly, [decimals: 2]) %>/mo
+                      ≈ <%= currency_symbol() %><%= :erlang.float_to_binary(avg_monthly, [decimals: 2]) %>/mo
                     </div>
                   <% end %>
                 </div>
@@ -128,16 +166,16 @@
             <label class="flex items-center justify-between border border-base-200 rounded-2xl p-4 cursor-pointer bg-base-100 hover:border-base-300">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center font-bold text-sm">
-                  ¥
+                  <%= currency_symbol() %>
                 </div>
                 <div>
                   <div class="font-bold text-sm text-base-content">Account Balance</div>
                   <div class="text-xs text-base-content/50 mt-0.5">
-                    Current Balance: ¥<%= format_amount(@user_balance) %> · 0% Fee · Instant
+                    Current Balance: <%= currency_symbol() %><%= format_amount(@user_balance) %> · 0% Fee · Instant
                   </div>
                 </div>
               </div>
-              <input type="radio" name="payment_method" value="balance" checked class="radio radio-warning radio-sm" />
+              <input type="radio" name="payment_driver" value="balance" checked class="payment-method-radio radio radio-warning radio-sm" />
             </label>
 
             <!-- Alipay -->
@@ -148,10 +186,10 @@
                 </div>
                 <div>
                   <div class="font-bold text-sm text-base-content">Alipay</div>
-                  <div class="text-xs text-base-content/50 mt-0.5">Limit ¥500 per transaction (incl. fee)</div>
+                  <div class="text-xs text-base-content/50 mt-0.5">Limit <%= currency_symbol() %>500 per transaction (incl. fee)</div>
                 </div>
               </div>
-              <input type="radio" name="payment_method" value="alipay" class="radio radio-warning radio-sm" />
+              <input type="radio" name="payment_driver" value="alipay_private" class="payment-method-radio radio radio-warning radio-sm" />
             </label>
 
             <!-- WeChat Pay -->
@@ -162,10 +200,10 @@
                 </div>
                 <div>
                   <div class="font-bold text-sm text-base-content">WeChat Pay</div>
-                  <div class="text-xs text-base-content/50 mt-0.5">Limit ¥1000 per transaction (incl. fee)</div>
+                  <div class="text-xs text-base-content/50 mt-0.5">Limit <%= currency_symbol() %>1000 per transaction (incl. fee)</div>
                 </div>
               </div>
-              <input type="radio" name="payment_method" value="wechat" class="radio radio-warning radio-sm" />
+              <input type="radio" name="payment_driver" value="epay" class="payment-method-radio radio radio-warning radio-sm" />
             </label>
 
             <!-- USDT -->
@@ -181,7 +219,7 @@
                   </div>
                 </div>
               </div>
-              <input type="radio" name="payment_method" value="usdt" class="radio radio-warning radio-sm" />
+              <input type="radio" name="payment_driver" value="usdt_trc20" class="payment-method-radio radio radio-warning radio-sm" />
             </label>
           </div>
         </div>
@@ -199,22 +237,28 @@
           <div class="space-y-3 text-sm">
             <div class="flex justify-between items-center text-base-content/60">
               <span>Subtotal</span>
-              <span class="font-semibold text-base-content">¥<%= format_amount(selected_amount) %></span>
+              <span class="font-semibold text-base-content">
+                <%= currency_symbol() %><span id="subtotal-display"><%= format_amount(selected_amount) %></span>
+              </span>
             </div>
 
             <div class="flex justify-between items-center text-base-content/60">
               <span>Balance Deduction</span>
-              <span class="font-semibold text-success">-¥<%= format_amount(selected_amount) %></span>
+              <span class="font-semibold text-success">
+                -<%= currency_symbol() %><span id="deduction-display">0.00</span>
+              </span>
             </div>
 
             <div class="flex justify-between items-center text-base-content/60">
               <span>Payment Fee</span>
-              <span class="font-semibold text-base-content">¥0.00</span>
+              <span class="font-semibold text-base-content"><%= currency_symbol() %>0.00</span>
             </div>
 
             <div class="pt-2 flex justify-between items-baseline">
               <span class="font-bold text-base text-base-content">Total Due</span>
-              <span class="text-2xl font-black text-warning">¥0.00</span>
+              <span class="text-2xl font-black text-warning">
+                <%= currency_symbol() %><span id="total-display">0.00</span>
+              </span>
             </div>
           </div>
         </div>
@@ -227,10 +271,10 @@
 
           <div class="flex items-center justify-between px-1">
             <span class="text-xs font-bold text-base-content/70">Use Balance</span>
-            <input type="checkbox" name="use_balance" value="true" checked class="toggle toggle-warning toggle-sm" />
+            <input type="checkbox" id="use-balance-toggle" name="use_balance" value="true" checked class="toggle toggle-warning toggle-sm" />
           </div>
 
-          <button type="submit" name="action" value="create_order" class="btn btn-warning btn-block rounded-2xl text-base">
+          <button type="submit" id="submit-btn" class="btn btn-warning btn-block rounded-2xl text-base">
             Confirm Order
           </button>
 
@@ -238,7 +282,7 @@
             Cancel
           </button>
 
-          <!-- Hidden Coupon Input via Native HTML details/summary -->
+          <!-- Promo Code Input -->
           <details class="text-center group">
             <summary class="text-xs font-medium text-warning hover:underline cursor-pointer list-none inline-flex items-center gap-1">
               Have a promo code? →
@@ -260,3 +304,69 @@
     </div>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const userBalance = <%= user_balance %>;
+    
+    const useBalanceToggle = document.getElementById("use-balance-toggle");
+    const subtotalDisplay = document.getElementById("subtotal-display");
+    const deductionDisplay = document.getElementById("deduction-display");
+    const totalDisplay = document.getElementById("total-display");
+    const submitBtn = document.getElementById("submit-btn");
+    const priceRadios = document.querySelectorAll(".price-radio");
+    const paymentRadios = document.querySelectorAll(".payment-method-radio");
+
+    function calculateOrder() {
+      const selectedRadio = document.querySelector(".price-radio:checked");
+      let subtotal = selectedRadio ? parseFloat(selectedRadio.dataset.amount) : 0;
+
+      // 1. Calculate balance deduction and final amount
+      let deduction = 0;
+      if (useBalanceToggle.checked) {
+        deduction = Math.min(userBalance, subtotal);
+      }
+
+      let total = Math.max(0, subtotal - deduction);
+
+      // 2. Update DOM display
+      subtotalDisplay.innerText = subtotal.toFixed(2);
+      deductionDisplay.innerText = deduction.toFixed(2);
+      totalDisplay.innerText = total.toFixed(2);
+
+      // 3. Validate Balance Payment against total order amount
+      const selectedPayment = document.querySelector(".payment-method-radio:checked");
+      if (selectedPayment && selectedPayment.value === "balance" && userBalance < subtotal) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Insufficient Balance";
+      } else {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Confirm Order";
+      }
+    }
+
+    // Toggle card highlights and recalculate on price selection
+    priceRadios.forEach(radio => {
+      radio.addEventListener("change", function() {
+        priceRadios.forEach(r => {
+          const label = r.closest("label");
+          if (r.checked) {
+            label.classList.add("border-warning", "bg-warning/10", "shadow-sm");
+            label.classList.remove("border-base-200", "bg-base-100");
+          } else {
+            label.classList.remove("border-warning", "bg-warning/10", "shadow-sm");
+            label.classList.add("border-base-200", "bg-base-100");
+          }
+        });
+        calculateOrder();
+      });
+    });
+
+    // Listen to payment method changes & toggle balance
+    paymentRadios.forEach(radio => radio.addEventListener("change", calculateOrder));
+    useBalanceToggle.addEventListener("change", calculateOrder);
+
+    // Initial calculation on page load
+    calculateOrder();
+  });
+</script>

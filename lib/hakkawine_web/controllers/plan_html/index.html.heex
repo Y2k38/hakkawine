@@ -1,3 +1,4 @@
+<Layouts.flash_group flash={@flash} />
 <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
   <!-- Header -->
   <div class="text-center mb-12">
@@ -13,7 +14,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
       <%= for plan <- @recurring_plans do %>
         <% 
-          min_price = get_min_price(plan.prices, :recurring) 
+          default_price = get_default_price(plan.prices) 
           reset_price = get_reset_price(plan.prices)
         %>
         <div class={[
@@ -37,8 +38,8 @@
 
               <!-- Price -->
               <div class="my-4">
-                <%= if min_price do %>
-                  <span class="text-3xl font-extrabold">¥<%= format_amount(min_price.amount) %></span>
+                <%= if default_price do %>
+                  <span class="text-3xl font-extrabold"><%= currency_symbol() %><%= format_amount(default_price.amount) %></span>
                   <span class="text-sm font-medium text-base-content/60">/ month starting</span>
                 <% else %>
                   <span class="text-xl font-medium text-base-content/40">Unavailable</span>
@@ -64,7 +65,7 @@
                 <li class="flex justify-between items-center">
                   <span class="text-base-content/70">Manual Reset Price</span>
                   <span class="font-semibold">
-                    <%= if reset_price, do: "¥#{format_amount(reset_price.amount)} / time", else: "Not Supported" %>
+                    <%= if reset_price, do: "#{currency_symbol()}#{format_amount(reset_price.amount)} / time", else: "Not Supported" %>
                   </span>
                 </li>
                 <li class="flex justify-between items-center">
@@ -81,9 +82,9 @@
             <!-- Action Button -->
             <div class="card-actions justify-end mt-8 pt-4 border-t border-base-200">
               <%= if plan.status == :active do %>
-                <button class="btn btn-primary btn-block rounded-xl">
+                <a href={"/checkout/sub/new?code=#{plan.code}"} class="btn btn-primary btn-block rounded-xl">
                   Subscribe Now
-                </button>
+                </a>
               <% else %>
                 <div class="w-full text-center">
                   <button disabled class="btn btn-disabled btn-block rounded-xl mb-2">
@@ -107,7 +108,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
       <%= for plan <- @one_time_plans do %>
-        <% price = get_min_price(plan.prices, :one_time) %>
+        <% price = get_default_price(plan.prices) %>
         <div class="card bg-base-100 shadow-xl border border-base-200 transition-all duration-200 hover:shadow-2xl">
           <div class="card-body p-6 flex flex-col justify-between">
             <div>
@@ -117,7 +118,7 @@
               <!-- Price -->
               <div class="my-4">
                 <%= if price do %>
-                  <span class="text-3xl font-extrabold">¥<%= format_amount(price.amount) %></span>
+                  <span class="text-3xl font-extrabold"><%= currency_symbol() %><%= format_amount(price.amount) %></span>
                   <span class="text-sm font-medium text-base-content/60">/ year</span>
                 <% else %>
                   <span class="text-xl font-medium text-base-content/40">Unavailable</span>
@@ -162,9 +163,9 @@
             <!-- Action Button -->
             <div class="card-actions justify-end mt-8 pt-4 border-t border-base-200">
               <%= if plan.status == :active do %>
-                <button class="btn btn-neutral btn-block rounded-xl">
+                <a href={"/checkout/sub/new?code=#{plan.code}"} class="btn btn-neutral btn-block rounded-xl">
                   Purchase Now
-                </button>
+                </a>
               <% else %>
                 <button disabled class="btn btn-disabled btn-block rounded-xl">
                   Currently Unavailable

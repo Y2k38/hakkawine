@@ -46,7 +46,9 @@ CREATE TABLE user_audit_logs (
 );
 
 CREATE INDEX idx_ual_user_time ON user_audit_logs (user_id, created_at DESC);
+
 CREATE INDEX idx_ual_action_time ON user_audit_logs (action_code, created_at DESC);
+
 CREATE INDEX idx_ual_ip_time ON user_audit_logs (ip_address, created_at DESC) WHERE ip_address IS NOT NULL;
 
 CREATE TABLE admin_audit_logs (
@@ -61,5 +63,7 @@ CREATE TABLE admin_audit_logs (
 );
 
 CREATE INDEX idx_aal_operator_time ON admin_audit_logs (operator_id, created_at DESC);
+
 CREATE INDEX idx_aal_target ON admin_audit_logs (target_type, target_id) WHERE target_id IS NOT NULL;
+
 CREATE INDEX idx_aal_action_time ON admin_audit_logs (action_code, created_at DESC);

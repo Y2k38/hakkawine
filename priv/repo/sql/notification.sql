@@ -48,7 +48,7 @@ CREATE TABLE message_templates (
     content text NOT NULL,
     is_enable boolean NOT NULL DEFAULT TRUE,
     created_at timestamptz NOT NULL DEFAULT NOW(),
-    updated_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE UNIQUE INDEX uk_template_code_channel_lang ON message_templates (code, channel, LANGUAGE);

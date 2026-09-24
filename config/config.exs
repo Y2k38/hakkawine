@@ -55,4 +55,15 @@ config :tailwind,
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
+config :hakkawine, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [
+    realtime: 20,
+    scheduled: 10,
+    outbound: 5
+  ],
+  lifeline: [rescue_after: {2, :hours}],
+  pruner: [max_age: {1, :day}],
+  repo: Hakkawine.Repo
+
 import_config "#{config_env()}.exs"

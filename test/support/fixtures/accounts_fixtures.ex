@@ -13,7 +13,7 @@ defmodule Hakkawine.AccountsFixtures do
       |> Enum.into(%{
         email: "some email"
       })
-      |> Hakkawine.Accounts.create_user_account()
+      |> Hakkawine.Accounts.create_customer()
 
     user_account
   end

@@ -13,7 +13,9 @@ CREATE TABLE tickets (
 );
 
 CREATE INDEX idx_tickets_user_id ON tickets (user_id);
+
 CREATE INDEX idx_tickets_status ON tickets (status);
+
 CREATE INDEX idx_tickets_priority ON tickets (priority);
 
 CREATE TABLE ticket_messages (
@@ -27,6 +29,7 @@ CREATE TABLE ticket_messages (
 );
 
 CREATE INDEX idx_ticket_messages_ticket_id ON ticket_messages (ticket_id);
+
 CREATE INDEX idx_ticket_messages_user_id ON ticket_messages (user_id);
 
 CREATE TABLE ticket_attachments (
@@ -42,5 +45,7 @@ CREATE TABLE ticket_attachments (
 );
 
 CREATE INDEX idx_attachments_ticket_id ON ticket_attachments (ticket_id);
+
 CREATE INDEX idx_attachments_message_id ON ticket_attachments (message_id);
+
 CREATE INDEX idx_attachments_user_id ON ticket_attachments (user_id);

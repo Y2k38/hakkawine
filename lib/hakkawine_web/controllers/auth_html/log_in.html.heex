@@ -42,7 +42,7 @@
         name={f[:password].name}
         value={f[:password].value}
         required 
-        placeholder="8–72 chars, 1 lowercase, 1 uppercase, 1 digit, 1 special" 
+        placeholder="12–72 chars, 1 lowercase, 1 uppercase, 1 digit, 1 special" 
         class={["input input-bordered w-full focus:outline-primary", f[:password].errors != [] && "input-error"]} 
       />
       <div :for={{msg, _opts} <- f[:password].errors} class="label py-1">

@@ -1,4 +1,5 @@
 CREATE TYPE user_account_type AS ENUM('customer', 'staff', 'system_admin');
+
 CREATE TYPE user_status AS ENUM('unverified', 'active', 'suspended', 'deactivating');
 
 CREATE TABLE user_accounts (
@@ -22,5 +23,7 @@ CREATE TABLE user_accounts (
 );
 
 CREATE UNIQUE INDEX uk_user_accounts_active_email ON user_accounts (email);
+
 CREATE UNIQUE INDEX uk_user_accounts_invite_code ON user_accounts (invite_code);
+
 CREATE INDEX idx_user_accounts_invited_by ON user_accounts (invited_by);

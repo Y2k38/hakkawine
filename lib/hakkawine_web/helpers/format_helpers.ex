@@ -1,4 +1,13 @@
 defmodule HakkawineWeb.FormatHelpers do
+  alias Hakkawine.System
+
+  def currency_symbol do
+    case System.get_setting("symbol") do
+      [{"symbol", value}] -> value
+      _ -> "$"
+    end
+  end
+
   def format_amount(nil), do: "0"
 
   def format_amount(%Decimal{} = decimal) do

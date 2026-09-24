@@ -1,5 +1,6 @@
 import Config
 
+config :hakkawine, Oban, testing: :manual
 config :logger, level: :warning
 
 config :hakkawine, HakkawineWeb.Endpoint, server: false

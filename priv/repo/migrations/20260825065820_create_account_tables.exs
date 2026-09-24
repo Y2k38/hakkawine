@@ -1,4 +1,4 @@
-defmodule Hakkawine.Repo.Migrations.CreateUserAccounts do
+defmodule Hakkawine.Repo.Migrations.CreateAccountTables do
   use Ecto.Migration
 
   def up do
@@ -30,16 +30,18 @@ defmodule Hakkawine.Repo.Migrations.CreateUserAccounts do
     end
 
     create unique_index(:user_accounts, [:email], name: :uk_user_accounts_active_email)
+    create unique_index(:user_accounts, [:account_type], where: "account_type = 'system_admin'", name: :idx_single_system_admin)
     create unique_index(:user_accounts, [:invite_code], name: :uk_user_accounts_invite_code)
     create index(:user_accounts, [:invited_by], name: :idx_user_accounts_invited_by)
   end
 
   def down do
-    drop_if_exists index(:user_accounts, [:invited_by], name: :idx_user_accounts_invited_by)
-    drop_if_exists index(:user_accounts, [:invite_code], name: :uk_user_accounts_invite_code)
-    drop_if_exists index(:user_accounts, [:email], name: :uk_user_accounts_email)
+    drop_if_exists index(:user_accounts, name: :idx_user_accounts_invited_by)
+    drop_if_exists index(:user_accounts, name: :uk_user_accounts_invite_code)
+    drop_if_exists index(:user_accounts, name: :idx_single_system_admin)
+    drop_if_exists index(:user_accounts, name: :uk_user_accounts_active_email)
 
-    drop table(:user_accounts)
+    drop_if_exists table(:user_accounts)
 
     execute "DROP TYPE user_status;"
     execute "DROP TYPE user_account_type;"

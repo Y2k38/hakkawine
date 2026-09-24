@@ -18,9 +18,9 @@ defmodule Hakkawine.Application do
       HakkawineWeb.Telemetry,
       Hakkawine.Repo,
       {DNSCluster, query: Application.get_env(:hakkawine, :dns_cluster_query) || :ignore},
+      {Oban, Application.fetch_env!(:hakkawine, Oban)},
       {Phoenix.PubSub, name: Hakkawine.PubSub},
-
-      {Task, fn -> Hakkawine.System.load_settings!() end},
+      Hakkawine.System.SettingLoader,
 
       # Start a worker by calling: Hakkawine.Worker.start_link(arg)
       # {Hakkawine.Worker, arg},

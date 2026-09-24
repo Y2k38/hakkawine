@@ -3,12 +3,13 @@ defmodule HakkawineWeb.PlanHTML do
 
   embed_templates "plan_html/*"
 
-  def get_min_price(prices, type) when is_list(prices) do
-    prices
-    |> Enum.filter(&(&1.type == type))
-    |> Enum.min_by(& &1.amount, fn -> nil end)
+  def get_default_price(prices) when is_list(prices) do
+    Enum.find(prices, fn price ->
+      price.is_default == true
+    end)
   end
-  def get_min_price(_, _), do: nil
+
+  def get_default_price(_, _), do: nil
 
   def get_reset_price(prices) when is_list(prices) do
     Enum.find(prices, &(&1.type == :reset))

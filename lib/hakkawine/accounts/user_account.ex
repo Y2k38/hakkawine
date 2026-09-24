@@ -2,9 +2,12 @@ defmodule Hakkawine.Accounts.UserAccount do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @account_types [:customer, :staff, :system_admin]
+  def account_types, do: @account_types
+
   @primary_key {:id, :id, autogenerate: true}
   schema "user_accounts" do
-    field :account_type, Ecto.Enum, values: [:customer, :staff, :system_admin], default: :customer
+    field :account_type, Ecto.Enum, values: @account_types, default: :customer
     field :status, Ecto.Enum, values: [:unverified, :active, :suspended, :deactivating], default: :unverified
     field :email, :string
     field :password_hash, :string
@@ -30,13 +33,27 @@ defmodule Hakkawine.Accounts.UserAccount do
     )
   end
 
+  def changeset(user_account, attrs) do
+    user_account
+    |> cast(attrs, [:account_type, :status, :email, :password, :email_verified_at, :password_updated_at])
+    |> validate_required([:account_type, :status, :email, :password, :email_verified_at, :password_updated_at])
+    |> normalize_email()
+    |> validate_email()
+    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
+    |> validate_password_complexity()
+    |> put_password_hash()
+    |> ensure_invite_code()
+    |> unique_constraint(:email, name: :idx_user_accounts_active_email)
+    |> unique_constraint(:invite_code, name: :idx_user_accounts_invite_code)
+  end
+
   def admin_registration_changeset(user_account, attrs) do
     user_account
     |> cast(attrs, [:email, :password])
     |> validate_required([:email, :password])
     |> normalize_email()
     |> validate_email()
-    |> validate_length(:password, min: 8, max: 72, message: "must be between 8 and 72 characters long")
+    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
     |> validate_password_complexity()
     |> put_password_hash()
     |> ensure_invite_code()
@@ -51,9 +68,10 @@ defmodule Hakkawine.Accounts.UserAccount do
     |> validate_honeypot()
     |> normalize_email()
     |> validate_email()
-    |> validate_length(:password, min: 8, max: 72, message: "must be between 8 and 72 characters long")
+    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
     |> validate_password_complexity()
     |> put_password_hash()
+    |> update_change(:verification_code, &String.trim/1)
     |> ensure_invite_code()
     |> unique_constraint(:email, name: :idx_user_accounts_active_email)
     |> unique_constraint(:invite_code, name: :idx_user_accounts_invite_code)
@@ -82,7 +100,7 @@ defmodule Hakkawine.Accounts.UserAccount do
     user_account
     |> cast(attrs, [:token, :password])
     |> validate_required([:token, :password])
-    |> validate_length(:password, min: 8, max: 72, message: "must be between 8 and 72 characters long")
+    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
     |> validate_password_complexity()
     |> put_password_hash()
     |> change(password_updated_at: DateTime.utc_now() |> DateTime.truncate(:second))

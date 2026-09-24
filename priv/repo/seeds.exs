@@ -31,6 +31,8 @@ end
 seeds_dir = Path.join(__DIR__, "seeds")
 
 seed_files = [
+  "node_labels.exs",
+  "obfs_domain.exs",
   "settings.exs",
   "user_audit_actions.exs",
 ]

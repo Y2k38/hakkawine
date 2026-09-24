@@ -48,17 +48,6 @@ settings_data = [
   %{section: "telegram", key: "telegram_bot_enable", value: false, description: "Toggle Telegram Bot service"},
   %{section: "telegram", key: "telegram_bot_token", value: "", description: "Telegram Bot API Token for user binding and notification alerts"},
   %{section: "telegram", key: "telegram_bot_username", value: "", description: "Telegram Bot handle for quick user redirection"},
-
-  # Network
-  %{section: "network", key: "blocked_inbound_ports", value: [], description: "Ports blocked for inbound user allocations to prevent GFW blocking and active probing"},
-
-  # Node labels
-  %{section: "node_label", key: "country", value: ["hk", "kr", "jp", "tw", "us", "sg", "in", "uk", "de", "fr", "tr"], description: "Country"},
-  %{section: "node_label", key: "isp", value: [], description: "Internet Service Provider"},
-  %{section: "node_label", key: "route", value: ["cn2_gia", "cn2_gt", "as9929", "as4837", "cmi", "bgp", "iplc", "iepl", "direct"], description: "Network Route"},
-  %{section: "node_label", key: "tier", value: ["lite", "standard", "premium", "one_time"], description: "Service Tier"},
-  %{section: "node_label", key: "protocol", value: ["vless", "hy2", "anytls", "shadowsocks"], description: "Supported Protocol"},
-  %{section: "node_label", key: "pool", value: ["public", "backup"], description: "Resource Pool Type"}
 ]
 
 DatabaseSeeder.seed(
