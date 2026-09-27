@@ -81,7 +81,8 @@ defmodule Hakkawine.MixProject do
       {:remote_ip, "~> 1.2"},
       {:dotenvy, "~> 1.0", only: [:dev]},
       {:oban, "~> 2.23"},
-      {:igniter, "~> 0.5", only: [:dev]}
+      {:igniter, "~> 0.5", only: [:dev]},
+      {:ymlr, "~> 5.1"}
     ]
   end
 

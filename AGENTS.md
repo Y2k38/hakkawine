@@ -146,7 +146,7 @@ custom classes must fully style the input
 
   **Never do this (invalid)**:
 
-      <%= if condition do %>
+      <% if condition do %>
         ...
       <% else if other_condition %>
         ...
@@ -198,7 +198,7 @@ custom classes must fully style the input
 
       <div id={@id}>
         {@my_assign}
-        <%= if @some_block_condition do %>
+        <% if @some_block_condition do %>
           {@another_assign}
         <% end %>
       </div>
@@ -279,7 +279,7 @@ custom classes must fully style the input
       <div id="messages" phx-update="stream">
         <div :for={{id, message} <- @streams.messages} id={id} class="flex group">
           {message.username}
-          <%= if @editing_message_id == message.id do %>
+          <% if @editing_message_id == message.id do %>
             <%!-- Edit mode --%>
             <.form for={@edit_form} id="edit-form-#{message.id}" phx-submit="save_edit">
               ...

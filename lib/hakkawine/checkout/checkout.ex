@@ -1,5 +1,6 @@
 defmodule Hakkawine.Checkout do
   import Ecto.Query
+
   alias Ecto.Multi
   alias Hakkawine.Repo
   alias Hakkawine.Catalog
@@ -14,12 +15,11 @@ defmodule Hakkawine.Checkout do
   alias Hakkawine.Billing.Workers.ExpireOrder
   alias Hakkawine.Billing.Workers.CreateSubscription
 
-  defdelegate changeset(attrs \\ %{}), to: CheckoutForm
+  defdelegate changeset(checkout_form, attrs \\ %{}), to: CheckoutForm
 
   def create_order(user, params \\ %{}) do
     with {:ok, form} <- CheckoutForm.parse(params),
-        {:ok, order_attrs} <- build_order_attrs(user, form) do
-
+         {:ok, order_attrs} <- build_order_attrs(user, form) do
       changeset = Order.changeset(%Order{}, order_attrs)
 
       multi =
@@ -54,6 +54,7 @@ defmodule Hakkawine.Checkout do
     case Enum.find(plan.prices, &(to_string(&1.type) == form.billing_cycle)) do
       nil ->
         {:error, :invalid_billing_cycle}
+
       price ->
         subtotal = price.amount
 
@@ -74,40 +75,43 @@ defmodule Hakkawine.Checkout do
         if PaymentGateway.exceeds_max_limit?(gateway, total_amount) do
           {:error, :exceeds_max_limit}
         else
-          {:ok, %{
-            user_id: user.id,
-            type: "plan_purchase",
-            status: "pending",
-            product_id: plan.id,
-            product_price_id: price.id,
-            billing_cycle: form.billing_cycle,
-
-            subtotal_amount: subtotal,
-            discount_amount: discount,
-            balance_amount: balance_deduct,
-            payment_fee: payment_fee,
-            total_amount: total_amount,
-
-            coupon_code: form.coupon_code,
-            coupon_snapshot: Coupon.to_snapshot(coupon),
-            price_snapshot: ProductPrice.to_snapshot(price),
-
-            payment_gateway_id: gateway.id,
-            payment_driver: form.payment_driver,
-            idempotency_key: form.idempotency_key
-          }}
+          {:ok,
+           %{
+             user_id: user.id,
+             type: "plan_purchase",
+             status: "pending",
+             product_id: plan.id,
+             product_price_id: price.id,
+             billing_cycle: form.billing_cycle,
+             subtotal_amount: subtotal,
+             discount_amount: discount,
+             balance_amount: balance_deduct,
+             payment_fee: payment_fee,
+             total_amount: total_amount,
+             coupon_code: form.coupon_code,
+             coupon_snapshot: Coupon.to_snapshot(coupon),
+             price_snapshot: ProductPrice.to_snapshot(price),
+             payment_gateway_id: gateway.id,
+             payment_driver: form.payment_driver,
+             idempotency_key: form.idempotency_key
+           }}
         end
     end
   end
 
   defp calculate_discount(nil, _amount), do: Decimal.new(0)
+
   defp calculate_discount(coupon, amount) do
     case coupon do
-      %{type: :fixed_amount, value: val} -> Decimal.min(val, amount)
+      %{type: :fixed_amount, value: val} ->
+        Decimal.min(val, amount)
+
       %{type: :percentage, value: val} ->
         discount_val = Decimal.mult(amount, val)
         Decimal.min(discount_val, amount)
-      _ -> Decimal.new(0)
+
+      _ ->
+        Decimal.new(0)
     end
   end
 
@@ -116,6 +120,7 @@ defmodule Hakkawine.Checkout do
       val when val in [true, "true"] ->
         balance = get_user_balance(user.id)
         Decimal.min(amount, balance)
+
       _ ->
         Decimal.new(0)
     end
@@ -197,13 +202,19 @@ defmodule Hakkawine.Checkout do
 
   defp mark_order_as_paid(%Multi{} = multi, %Order{} = order, %PaymentRecord{} = payment) do
     multi
-      |> Multi.update(:order, Order.changeset(order, %{status: "paid", paid_at: DateTime.utc_now()}))
-      |> Multi.update(:payment_record, PaymentRecord.changeset(payment, %{status: "paid", paid_at: DateTime.utc_now()}))
-      |> Oban.insert(:provision_job, fn %{order: order} ->
-        CreateSubscription.new(%{
-          "order_id" => order.id,
-          "user_id" => order.user_id
-        })
-      end)
+    |> Multi.update(
+      :order,
+      Order.changeset(order, %{status: "paid", paid_at: DateTime.utc_now()})
+    )
+    |> Multi.update(
+      :payment_record,
+      PaymentRecord.changeset(payment, %{status: "paid", paid_at: DateTime.utc_now()})
+    )
+    |> Oban.insert(:provision_job, fn %{order: order} ->
+      CreateSubscription.new(%{
+        "order_id" => order.id,
+        "user_id" => order.user_id
+      })
+    end)
   end
 end

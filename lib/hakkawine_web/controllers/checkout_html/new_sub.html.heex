@@ -87,7 +87,7 @@
             <span class="badge badge-warning font-bold px-3 py-3 rounded-lg text-sm">
               <%= @plan.name %>
             </span>
-            <%= if is_one_time do %>
+            <% if is_one_time do %>
               <span class="badge badge-outline rounded-full text-xs">Data Top-up Package</span>
             <% else %>
               <span class="badge badge-success badge-outline rounded-full text-xs">Renewable</span>
@@ -121,7 +121,7 @@
 
               <label class={card_class}>
                 <!-- Top-Right Discount Badge -->
-                <%= if savings_percent > 0 do %>
+                <% if savings_percent > 0 do %>
                   <span class="absolute -top-2 -right-2 badge badge-success badge-xs font-bold text-[10px] px-2 py-1.5 shadow-sm">
                     Save <%= savings_percent %>%
                   </span>
@@ -146,7 +146,7 @@
                   <div class="text-base font-black text-base-content">
                     <%= currency_symbol() %><%= format_amount(price.amount) %>
                   </div>
-                  <%= if m_count > 1 do %>
+                  <% if m_count > 1 do %>
                     <div class="text-[11px] text-base-content/50 mt-0.5">
                       ≈ <%= currency_symbol() %><%= :erlang.float_to_binary(avg_monthly, [decimals: 2]) %>/mo
                     </div>

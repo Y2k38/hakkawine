@@ -1,37 +1,48 @@
 defmodule Hakkawine.Checkout.CheckoutForm do
+  use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Hakkawine.Billing.Order
 
-  @types %{
-    fallback_url: :string,
-    order_type: :string,
-    subscription_id: :integer,
-    target_product_code: :string,
-    current_product_code: :string,
-    billing_cycle: :string,
-    recharge_amount: :decimal,
-    payment_driver: :string,
-    use_balance: :boolean,
-    coupon_code: :string,
-    idempotency_key: :string
-  }
+  # require Logger
 
-  @default_values %{
-    coupon_code: "",
-    payment_driver: "",
-    use_balance: false
-  }
+  @primary_key false
+  embedded_schema do
+    field :fallback_url, :string
+    field :order_type, :string
+    field :subscription_id, :integer
+    field :target_product_code, :string
+    field :current_product_code, :string
+    field :billing_cycle, :string
+    field :recharge_amount, :decimal
+    field :payment_driver, :string, default: ""
+    field :use_balance, :boolean, default: false
+    field :coupon_code, :string, default: ""
+    field :idempotency_key, :string
+  end
 
   def parse(params) do
-    params
-    |> changeset()
+    %__MODULE__{}
+    |> changeset(params)
     |> apply_action(:insert)
   end
 
-  def changeset(params \\ %{}) do
-    {%{}, @types}
-    |> cast(params, Map.keys(@types))
-    |> set_default_values()
+  def changeset(schema, params \\ %{}) do
+    schema
+    |> cast(params, [
+      :fallback_url,
+      :order_type,
+      :subscription_id,
+      :target_product_code,
+      :current_product_code,
+      :billing_cycle,
+      :recharge_amount,
+      :payment_driver,
+      :use_balance,
+      :coupon_code,
+      :idempotency_key
+    ])
     |> validate_required([:fallback_url, :order_type, :idempotency_key])
     |> validate_inclusion(:order_type, Order.enum_strings(:type))
     |> validate_number(:subscription_id, greater_than: 0)
@@ -45,15 +56,6 @@ defmodule Hakkawine.Checkout.CheckoutForm do
     |> validate_by_order_type()
   end
 
-  defp set_default_values(changeset) do
-    Enum.reduce(@default_values, changeset, fn {field, default_val}, acc_changeset ->
-      case get_field(acc_changeset, field) do
-        nil -> put_change(acc_changeset, field, default_val)
-        _value -> acc_changeset
-      end
-    end)
-  end
-
   defp validate_by_order_type(%Ecto.Changeset{valid?: false} = changeset), do: changeset
 
   defp validate_by_order_type(changeset) do
@@ -65,7 +67,11 @@ defmodule Hakkawine.Checkout.CheckoutForm do
         validate_required(changeset, [:subscription_id, :target_product_code, :billing_cycle])
 
       "plan_upgrade" ->
-        validate_required(changeset, [:subscription_id, :current_product_code, :target_product_code])
+        validate_required(changeset, [
+          :subscription_id,
+          :current_product_code,
+          :target_product_code
+        ])
 
       "traffic_reset_fee" ->
         validate_required(changeset, [:subscription_id, :target_product_code])

@@ -3,7 +3,7 @@ defmodule Hakkawine.Infra do
   alias Hakkawine.Repo
   alias Hakkawine.Infra.OBFSDomain
 
-  defp get_random_obfs_domain() do
+  def get_random_obfs_domain() do
     OBFSDomain
     |> order_by(fragment("random()"))
     |> limit(1)
