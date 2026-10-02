@@ -67,10 +67,18 @@ defmodule HakkawineWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api/v1", HakkawineWeb.Api.V1, as: :api_v1 do
+  scope "/api/v1", HakkawineWeb.Api.V1 do
     pipe_through :api
 
     post "/payment/notify", PaymentController, :notify
+
+    get "/sub/:uuid", SubscriptionController, :index
+  end
+
+  scope "/agent/v1", HakkawineWeb.Agent.V1 do
+    pipe_through :api
+
+    post "/stream", StreamController, :index
   end
 
   if Application.compile_env(:hakkawine, :dev_routes) do
