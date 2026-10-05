@@ -1,6 +1,8 @@
 defmodule Hakkawine.Infra.NodeLease do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Hakkawine.ProxyDrivers.Config
 
   @primary_key {:id, :id, autogenerate: true}
@@ -9,7 +11,8 @@ defmodule Hakkawine.Infra.NodeLease do
     field :subscription_id, :integer
     field :plan_slot_id, :integer
     field :port, :integer
-    field :is_active, :integer
+    field :is_active, :boolean
+
     embeds_one :proxy_config, Hakkawine.ProxyDrivers.Config, on_replace: :update
 
     timestamps(

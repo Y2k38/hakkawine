@@ -1,4 +1,4 @@
-defmodule Hakkawine.Repo.Migrations.CreateMetricsTables do
+defmodule Hakkawine.Repo.Migrations.CreateStatsTables do
   use Ecto.Migration
 
   def up do
@@ -105,11 +105,15 @@ defmodule Hakkawine.Repo.Migrations.CreateMetricsTables do
 
   def down do
     execute "SELECT remove_retention_policy('node_traffic_logs_daily', if_exists => true);"
+
     execute "SELECT remove_continuous_aggregate_policy('node_traffic_logs_daily', if_exists => true);"
+
     execute "DROP MATERIALIZED VIEW IF EXISTS node_traffic_logs_daily CASCADE;"
 
     execute "SELECT remove_retention_policy('node_traffic_logs_5m', if_exists => true);"
+
     execute "SELECT remove_continuous_aggregate_policy('node_traffic_logs_5m', if_exists => true);"
+
     execute "DROP MATERIALIZED VIEW IF EXISTS node_traffic_logs_5m CASCADE;"
 
     execute "SELECT remove_retention_policy('node_traffic_logs', if_exists => true);"

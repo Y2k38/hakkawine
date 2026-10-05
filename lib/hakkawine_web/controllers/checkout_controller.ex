@@ -1,5 +1,6 @@
 defmodule HakkawineWeb.CheckoutController do
   use HakkawineWeb, :controller
+
   alias Hakkawine.Catalog
 
   def new_sub(conn, params) do

@@ -1,5 +1,6 @@
 defmodule HakkawineWeb.Plugs.FetchCurrentUser do
   import Plug.Conn
+
   alias Hakkawine.Accounts
   alias Hakkawine.Accounts.UserAccount
 

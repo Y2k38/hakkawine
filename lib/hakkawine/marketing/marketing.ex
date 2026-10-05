@@ -1,6 +1,7 @@
 defmodule Hakkawine.Marketing do
   import Ecto.Query
   import Hakkawine.Repo.Query
+
   alias Hakkawine.Repo
   alias Hakkawine.Marketing.Coupon
 

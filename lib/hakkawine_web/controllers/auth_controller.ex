@@ -1,6 +1,7 @@
 defmodule HakkawineWeb.AuthController do
   use HakkawineWeb, :controller
 
+  alias Hakkawine.System
   alias Hakkawine.Accounts
   alias Hakkawine.Accounts.UserAccount
   alias HakkawineWeb.Plugs.RedisRateLimiter
@@ -41,8 +42,14 @@ defmodule HakkawineWeb.AuthController do
     when action in [:reset_password]
 
   def register_page(conn, _params) do
-    conn
-    |> render(:register_new, changeset: Accounts.registration_changeset(%UserAccount{}))
+    case System.get_setting("enable_register", false) do
+      true ->
+        conn
+        |> render(:register_new, changeset: Accounts.registration_changeset(%UserAccount{}))
+      false ->
+        conn
+        |> redirect(to: ~p"/auth/log_in")
+    end
   end
 
   def send_code(conn, %{"email" => email}) do

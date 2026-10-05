@@ -1,7 +1,9 @@
 defmodule Hakkawine.System.Template do
   use Ecto.Schema
+
   import Ecto.Changeset
   import Hakkawine.Utils.ChangesetHelpers
+
   alias Hakkawine.Repo.Types.JSONValue
 
   @primary_key {:id, :id, autogenerate: true}

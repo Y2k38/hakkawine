@@ -1,6 +1,8 @@
 defmodule Hakkawine.Billing.Order do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Hakkawine.Billing.SequenceNo
 
   @billing_cycles [:monthly, :quarterly, :half_yearly, :yearly, :one_time]
@@ -10,8 +12,20 @@ defmodule Hakkawine.Billing.Order do
   schema "orders" do
     field :order_no, :string
     field :user_id, :integer
-    field :type, Ecto.Enum, values: [:plan_purchase, :plan_renew, :plan_upgrade, :traffic_reset_fee, :traffic_addon, :balance_recharge]
-    field :status, Ecto.Enum, values: [:pending, :processing, :completed, :cancelled, :failed, :refunded, :disputed]
+
+    field :type, Ecto.Enum,
+      values: [
+        :plan_purchase,
+        :plan_renew,
+        :plan_upgrade,
+        :traffic_reset_fee,
+        :traffic_addon,
+        :balance_recharge
+      ]
+
+    field :status, Ecto.Enum,
+      values: [:pending, :processing, :completed, :cancelled, :failed, :refunded, :disputed]
+
     field :product_id, :integer
     field :product_price_id, :integer
     field :subscription_id, :integer
@@ -45,15 +59,36 @@ defmodule Hakkawine.Billing.Order do
   def changeset(order, attrs) do
     order
     |> cast(attrs, [
-      :order_no, :user_id, :type, :status, :product_id, :product_price_id,
-      :subscription_id, :billing_cycle, :subtotal_amount, :discount_amount,
-      :balance_amount, :payment_fee, :total_amount, :coupon_code,
-      :coupon_snapshot, :price_snapshot, :payment_gateway_id,
-      :payment_driver, :paid_at, :note
+      :order_no,
+      :user_id,
+      :type,
+      :status,
+      :product_id,
+      :product_price_id,
+      :subscription_id,
+      :billing_cycle,
+      :subtotal_amount,
+      :discount_amount,
+      :balance_amount,
+      :payment_fee,
+      :total_amount,
+      :coupon_code,
+      :coupon_snapshot,
+      :price_snapshot,
+      :payment_gateway_id,
+      :payment_driver,
+      :paid_at,
+      :note
     ])
     |> validate_required([
-      :user_id, :type, :status, :subtotal_amount,
-      :discount_amount, :balance_amount, :payment_fee, :total_amount
+      :user_id,
+      :type,
+      :status,
+      :subtotal_amount,
+      :discount_amount,
+      :balance_amount,
+      :payment_fee,
+      :total_amount
     ])
     |> validate_number(:subtotal_amount, greater_than_or_equal_to: 0)
     |> validate_number(:total_amount, greater_than_or_equal_to: 0)

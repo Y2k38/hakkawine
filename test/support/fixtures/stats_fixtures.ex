@@ -1,7 +1,7 @@
-defmodule Hakkawine.MetricsFixtures do
+defmodule Hakkawine.StatsFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `Hakkawine.Metrics` context.
+  entities via the `Hakkawine.Stats` context.
   """
 
   @doc """
@@ -13,7 +13,7 @@ defmodule Hakkawine.MetricsFixtures do
       |> Enum.into(%{
         node_id: 42
       })
-      |> Hakkawine.Metrics.create_traffic_log()
+      |> Hakkawine.Stats.create_traffic_log()
 
     traffic_log
   end

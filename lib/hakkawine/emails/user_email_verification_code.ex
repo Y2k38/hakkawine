@@ -1,6 +1,7 @@
 defmodule Hakkawine.Emails.UserEmailVerificationCode do
-  import Swoosh.Email
   use Phoenix.Component
+
+  import Swoosh.Email
 
   # HEEx Inline HTML Template with Inline CSS for max email client compatibility
   defp code_template(assigns) do

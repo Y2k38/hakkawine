@@ -1,5 +1,6 @@
-defmodule Hakkawine.Metrics.NodeTrafficLog do
+defmodule Hakkawine.Stats.NodeTrafficLog do
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @primary_key false
@@ -15,7 +16,15 @@ defmodule Hakkawine.Metrics.NodeTrafficLog do
 
   def changeset(traffic_log, attrs) do
     traffic_log
-    |> cast(attrs, [:recorded_at, :node_id, :user_id, :subscription_id, :upload_bytes, :download_bytes, :rate])
+    |> cast(attrs, [
+      :recorded_at,
+      :node_id,
+      :user_id,
+      :subscription_id,
+      :upload_bytes,
+      :download_bytes,
+      :rate
+    ])
     |> validate_required([:recorded_at, :node_id, :user_id, :subscription_id])
   end
 end

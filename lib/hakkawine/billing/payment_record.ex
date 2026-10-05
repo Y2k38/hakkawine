@@ -1,6 +1,8 @@
 defmodule Hakkawine.Billing.PaymentRecord do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Hakkawine.Billing.SequenceNo
   # alias Hakkawine.Repo.Types.JSONValue
 

@@ -1,6 +1,7 @@
 defmodule Hakkawine.Emails.UserEmailResetPassword do
-  import Swoosh.Email
   use Phoenix.Component
+
+  import Swoosh.Email
 
   defp reset_password_template(assigns) do
     ~H"""

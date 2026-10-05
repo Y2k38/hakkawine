@@ -22,89 +22,97 @@ defmodule Hakkawine.ProxyDrivers.Vless do
 
   defp random_short_id(_), do: ""
 
-  @clash_server_template """
-  - name: "vless-reality-in"
-    type: vless
-    server: 0.0.0.0
-    port: <%= endpoint.port %>
-    users:
-      - user_<%= endpoint.config.user_id %>: 1
-        uuid: <%= endpoint.config.user_uuid %>
-    reality-config:
-      dest: <%= endpoint.config.obfs_host %>:<%= endpoint.config.obfs_port %>
-      private-key: <%= endpoint.config.vless_private_key %>
-      short-id:
-        - <%= endpoint.config.vless_short_ids %>
-      server-names:
-      <% for id <- endpoint.config.vless_short_ids do %>
-        - <%= id %>
-      <% end %>
-    <% if endpoint.config.vless_network == :xhttp %>
-    xhttp-config:
-      path: "<%= endpoint.config.obfs_uri %>"
-      host: "<%= endpoint.config.obfs_host %>"
-      mode: <%= endpoint.config.obfs_mode %>
-    <% end %>
-  """
+  def to_clash_map(:client, config) do
+    base = %{
+      "name" => config.name,
+      "type" => "vless",
+      "server" => config.server,
+      "port" => config.port,
+      "uuid" => config.sub_uuid,
+      "reality-opts" => %{
+        "public-key" => config.vless_public_key,
+        "short-id" => ""
+      },
+      "network" => config.vless_network,
+      "udp" => config.enable_udp,
+      "tls" => true,
+      "servername" => config.obfs_host,
+      "alpn" => config.alpn,
+      "client-fingerprint" => config.fingerprint,
+    }
 
-  @clash_client_template """
-  - name: <%= endpoint.name %>
-    type: vless
-    server: <%= endpoint.server %>
-    port: <%= endpoint.port %>
-    uuid: <%= endpoint.config.user_uuid %>
-    reality-opts:
-      public-key: "<%= endpoint.config.vless_public_key %>"
-      short-id: "<%= short_id %>"
-    network: <%= endpoint.config.vless_network %>
-    <% if endpoint.config.vless_network == :xhttp %>
-    xhttp-opts:
-      path: <%= endpoint.config.obfs_uri %>
-      host: <%= endpoint.config.obfs_host %>
-      mode: "stream-one"
-    <% end %>
-    udp: <%= endpoint.config.enable_udp %>
-    tls: true
-    servername: <%= endpoint.config.obfs_host %>
-    alpn: <%= endpoint.config.alpn %>
-    client-fingerprint: <%= fp %>
-  """
+    if config.vless_network == :xhttp do
+      Map.put(base, "xhttp-opts", %{
+        "path" => config.obfs_uri,
+        "host" => config.obfs_host,
+        "mode" => "stream-one"
+      })
+    else
+      base
+    end
+  end
 
-  def build_client_uri(endpoint) do
+  def to_clash_map(:server, config) do
+    base = %{
+      "name" => "vless-reality-in",
+      "type" => "vless",
+      "server" => "0.0.0.0",
+      "port" => config.port,
+      "users" => [%{
+        "user_#{config.sub_id}" => 1,
+        "uuid" => config.sub_uuid
+      }],
+      "reality-config" => %{
+        "dest" => "#{config.obfs_host}:#{config.obfs_port}",
+        "private-key" => config.vless_private_key,
+        "short-id" => config.vless_short_ids
+      }
+    }
+
+    if config.vless_network == :xhttp do
+      Map.put(base, "xhttp-config", %{
+        "path" => config.obfs_uri,
+        "host" => config.obfs_host,
+        "mode" => "auto"
+      })
+    else
+      base
+    end
+  end
+
+  def to_uri(config) do
     userinfo =
-      Base.encode64(":#{endpoint.config.user_uuid}:#{endpoint.host}:#{endpoint.config.port}")
+      Base.encode64(":#{config.sub_uuid}:#{config.host}:#{config.port}")
 
-    query = build_query_params(endpoint) |> URI.encode_query()
+    query = build_query_params(config) |> URI.encode_query()
 
     "vless://#{userinfo}?#{query}"
   end
 
-  defp build_query_params(endpoint) do
-    obfs_host = "{\"Host\":\"#{endpoint.config.obfs_host}\"}"
-
+  defp build_query_params(config) do
     %{
       "obfs" => "xhttp",
-      "obfsParam" => obfs_host,
-      "path" => endpoint.config.obfs_uri,
+      "obfsParam" => "{\"Host\":\"#{config.obfs_host}\"}",
+      "path" => config.obfs_uri,
       "mode" => "auto",
-      "alpn" => endpoint.config.alpn || "http/1.1"
+      "alpn" => config.alpn
     }
-    |> merge_common_params(endpoint)
+    |> merge_common_params(config)
   end
 
-  defp merge_common_params(params, endpoint) do
+  defp merge_common_params(params, config) do
     base = %{
       "tls" => "1",
-      "udp" => if(endpoint.config.enable_udp, do: "1", else: "0"),
-      "fingerprint" => Config.get_random_fingerprint(),
-      "remarks" => endpoint.name
+      "udp" => Config.bool_to_flag(config.enable_udp),
+      "fingerprint" => config.fingerprint,
+      "remarks" => config.name
     }
 
     base =
-      if is_binary(endpoint.config.vless_public_key) and endpoint.config.vless_public_key != "" do
+      if is_binary(config.vless_public_key) and config.vless_public_key != "" do
         Map.merge(base, %{
-          "pbk" => endpoint.config.vless_public_key,
-          "sid" => random_short_id(endpoint.config.vless_short_ids)
+          "pbk" => config.vless_public_key,
+          "sid" => random_short_id(config.vless_short_ids)
         })
       else
         base

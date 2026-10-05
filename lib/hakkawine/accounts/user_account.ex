@@ -1,5 +1,6 @@
 defmodule Hakkawine.Accounts.UserAccount do
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @account_types [:customer, :staff, :system_admin]

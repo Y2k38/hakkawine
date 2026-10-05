@@ -1,5 +1,6 @@
 defmodule Hakkawine.Accounts.Services.ResetPassword do
   import Ecto.Query, warn: false
+
   alias Hakkawine.Repo
   alias Hakkawine.Mailer
   alias Hakkawine.Accounts

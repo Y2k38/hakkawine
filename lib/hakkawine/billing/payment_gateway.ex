@@ -1,6 +1,8 @@
 defmodule Hakkawine.Billing.PaymentGateway do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Hakkawine.Repo.Types.JSONValue
 
   @primary_key {:id, :id, autogenerate: true}

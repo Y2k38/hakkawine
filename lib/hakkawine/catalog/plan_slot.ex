@@ -1,6 +1,8 @@
 defmodule Hakkawine.Catalog.PlanSlot do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Hakkawine.Catalog.Product
 
   @primary_key {:id, :id, autogenerate: true}

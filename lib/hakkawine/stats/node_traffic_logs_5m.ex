@@ -1,4 +1,4 @@
-defmodule Hakkawine.Metrics.NodeTrafficLog5m do
+defmodule Hakkawine.Stats.NodeTrafficLogs5m do
   use Ecto.Schema
 
   @primary_key false

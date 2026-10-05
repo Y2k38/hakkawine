@@ -171,3 +171,6 @@ config :hakkawine, HakkawineWeb.Endpoint,
   check_origin: System.get_env("CHECK_ORIGIN", "false") |> Util.parse_check_origin!()
 
 config :hakkawine, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+
+config :hakkawine, :rate_limiter,
+  enabled: System.get_env("RATE_LIMITER_ENABLED", "true") in ["true", "1"]

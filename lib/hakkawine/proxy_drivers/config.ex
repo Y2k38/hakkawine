@@ -34,8 +34,12 @@ defmodule Hakkawine.ProxyDrivers.Config do
   embedded_schema do
     field :protocol, Ecto.Enum, values: [:ss, :vless, :anytls, :hy2]
 
-    field :user_id, :integer
-    field :user_uuid, :string
+    field :name, :string
+    field :host, :string
+    field :port, :integer
+
+    field :sub_id, :integer
+    field :sub_uuid, :string
     field :password, :string
 
     field :obfs_host, :string
@@ -43,8 +47,8 @@ defmodule Hakkawine.ProxyDrivers.Config do
     field :obfs_uri, :string, default: "/"
     field :obfs_pass, :string
 
-    field :ss_cipher, Ecto.Enum, values: Shadowsocks.ciphers()
-    field :ss_plugin, Ecto.Enum, values: Shadowsocks.obfs_plugins()
+    field :ss_cipher, Ecto.Enum, values: Shadowsocks.ss_ciphers()
+    field :ss_plugin, Ecto.Enum, values: Shadowsocks.ss_plugins()
     field :ss_plugin_mode, Ecto.Enum, values: Shadowsocks.ss_plugin_modes()
 
     field :vless_network, Ecto.Enum, values: Vless.networks()
@@ -65,6 +69,7 @@ defmodule Hakkawine.ProxyDrivers.Config do
     field :enable_udp, :boolean, default: true
     # Note: gRPC strictly requires "h2", and Hysteria2 strictly requires "h3".
     field :alpn, :string, default: "h2,http/1.1"
+    field :fingerprint, Ecto.Enum, values: @client_fingerprints, default: :chrome
   end
 
   def changeset(config \\ %__MODULE__{}, params) do
@@ -72,8 +77,10 @@ defmodule Hakkawine.ProxyDrivers.Config do
     |> cast(params, __schema__(:fields))
     |> validate_required([
       :protocol,
-      :user_id,
-      :user_uuid,
+      :host,
+      :port,
+      :sub_id,
+      :sub_uuid,
       :bandwidth_up_mbps,
       :bandwidth_down_mbps
     ])

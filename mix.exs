@@ -60,7 +60,7 @@ defmodule Hakkawine.MixProject do
        depth: 1},
       {:daisyui,
        github: "saadeghi/daisyui",
-       tag: "v5.7.27",
+       tag: "v5.7.47",
        sparse: "packages/bundle",
        app: false,
        compile: false,
@@ -82,6 +82,7 @@ defmodule Hakkawine.MixProject do
       {:dotenvy, "~> 1.0", only: [:dev]},
       {:oban, "~> 2.23"},
       {:igniter, "~> 0.5", only: [:dev]},
+      {:yaml_elixir, "~> 2.12"},
       {:ymlr, "~> 5.1"}
     ]
   end

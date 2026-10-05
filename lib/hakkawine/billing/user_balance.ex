@@ -1,5 +1,6 @@
 defmodule Hakkawine.Billing.UserBalance do
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @primary_key {:user_id, :integer, autogenerate: false}

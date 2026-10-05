@@ -11,6 +11,14 @@ defmodule HakkawineWeb.Plugs.RedisRateLimiter do
   end
 
   def call(conn, opts) do
+    if Application.get_env(:hakkawine, :rate_limiter)[:enabled] do
+      do_rate_limit(conn, opts)
+    else
+      conn
+    end
+  end
+
+  defp do_rate_limit(conn, opts) do
     client_identifier = get_client_identifier(conn)
     key = "rate_limit:#{opts.action_name}:#{client_identifier}"
 

@@ -1,6 +1,8 @@
 defmodule Hakkawine.Catalog.Product do
   use Ecto.Schema
+
   import Ecto.Changeset
+
   alias Hakkawine.Catalog.PlanSlot
   alias Hakkawine.Catalog.ProductPrice
 

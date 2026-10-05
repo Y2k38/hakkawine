@@ -1,91 +1,91 @@
 defmodule Hakkawine.ProxyDrivers.Shadowsocks do
-  @ciphers [
-    :blake3_aes_128_gcm,
-    :blake3_aes_256_gcm,
-    :blake3_chacha20_poly1305,
-    :aes_128_gcm,
-    :aes_256_gcm,
-    :chacha20_poly1305
-  ]
-
-  def ciphers, do: @ciphers
-
   @cipher_key_lens %{
-    blake3_aes_128_gcm: 16,
-    blake3_aes_256_gcm: 32,
-    blake3_chacha20_poly1305: 32,
     aes_128_gcm: 16,
     aes_256_gcm: 32,
-    chacha20_poly1305: 32
+    chacha20_poly1305: 32,
+    blake3_aes_128_gcm: 16,
+    blake3_aes_256_gcm: 32,
+    blake3_chacha20_poly1305: 32
   }
 
-  @obfs_plugins [:none, :simple_obfs]
+  def ss_ciphers do
+    [
+      aes_128_gcm: "aes-128-gcm",
+      aes_256_gcm: "aes-256-gcm",
+      chacha20_poly1305: "chacha20-poly1305",
+      blake3_aes_128_gcm: "blake3-aes-128-gcm",
+      blake3_aes_256_gcm: "blake3-aes-256-gcm",
+      blake3_chacha20_poly1305: "blake3-chacha20-poly1305"
+    ]
+  end
 
-  def obfs_plugins, do: @obfs_plugins
+  def ss_plugins do
+    [
+      none: "none",
+      simple_obfs: "simple-obfs"
+    ]
+  end
 
-  @ss_plugin_modes [:http, :tls]
+  def ss_plugin_modes, do: [:http, :tls]
 
-  def ss_plugin_modes, do: @ss_plugin_modes
-
-  defp key_length(cipher_name) do
-    case Map.get(@cipher_key_lens, cipher_name) do
-      %{key_len: len} -> {:ok, len}
-      nil -> {:error, :unknown_cipher}
+  def generate_key(cipher_name) do
+    case Map.fetch(@cipher_key_lens, cipher_name) do
+      {:ok, len} -> {:ok, :crypto.strong_rand_bytes(len) |> Base.encode64()}
+      :error -> {:error, :unknown_cipher}
     end
   end
 
-  defp generate_key(cipher_name) do
-    with {:ok, len} <- key_length(cipher_name) do
-      key = :crypto.strong_rand_bytes(len) |> Base.encode64()
-      {:ok, key}
+  def to_clash_map(:client, config) do
+    base = %{
+      "name" => config.name,
+      "type" => "ss",
+      "server" => config.host,
+      "port" => config.port,
+      "cipher" => to_string(config.ss_cipher),
+      "password" => config.password,
+      "udp" => Map.get(config, :enable_udp, true),
+      "tfo" => false
+    }
+
+    if config.ss_plugin == :simple_obfs do
+      Map.merge(base, %{
+        "plugin" => "obfs",
+        "plugin-opts" => %{
+          "mode" => to_string(config.ss_plugin_mode),
+          "host" => config.obfs_host
+        }
+      })
+    else
+      base
     end
   end
 
-  @clash_server_template """
-  - name: "ss-in"
-    type: shadowsocks
-    server: 0.0.0.0
-    port: <%= endpoint.port %>
-    cipher: <%= endpoint.config.ss_cipher %>
-    password: '<%= endpoint.config.password %>'
-    <% if endpoint.config.ss_plugin == :simple_obfs do %>
-    simple-obfs:
-      enable: true
-      mode: <%= config.obfs_mode %>
-    <% end %>
-  """
+  def to_clash_map(:server, config) do
+    base = %{
+      "name" => "ss-in",
+      "type" => "shadowsocks",
+      "server" => "0.0.0.0",
+      "port" => config.port,
+      "cipher" => to_string(config.ss_cipher),
+      "password" => config.password
+    }
 
-  @clash_client_template """
-  - name: <%= endpoint.name %>
-    type: ss
-    server: <%= endpoint.host %>
-    port: <%= endpoint.port %>
-    cipher: <%= endpoint.config.ss_cipher %>
-    password: '<%= endpoint.config.password %>'
-    <% if endpoint.config.ss_plugin == :simple_obfs do %>
-    plugin: obfs
-    plugin-opts:
-      mode: <%= endpoint.config.obfs_mode %>
-      host: <%= endpoint.config.obfs_host %>
-    <% end %>
-    udp: <%= endpoint.config.enable_udp %>
-    tfo: false
-  """
-
-  def get_template(role) do
-    case role do
-      :client -> @clash_client_template
-      :server -> @clash_server_template
+    if config.ss_plugin == :simple_obfs do
+      Map.put(base, "simple-obfs", %{
+        "enable" => true,
+        "mode" => to_string(config.ss_plugin_mode)
+      })
+    else
+      base
     end
   end
 
-  def build_client_uri(endpoint) do
-    userinfo = Base.encode64("#{endpoint.config.ss_cipher}:#{endpoint.config.password}")
-
-    query = build_query_params(endpoint.config) |> URI.encode_query()
+  def to_uri(config) do
+    userinfo = Base.encode64("#{config.ss_cipher}:#{config.password}")
+    query = build_query_params(config) |> URI.encode_query()
     query_str = if query != "", do: "?#{query}", else: ""
 
-    "ss://#{userinfo}@#{endpoint.host}:#{endpoint.port}#{query_str}##{URI.encode_www_form(endpoint.name)}"
+    "ss://#{userinfo}@#{config.host}:#{config.port}#{query_str}##{URI.encode_www_form(config.name)}"
   end
 
   defp build_query_params(%{ss_plugin: :simple_obfs} = config) do

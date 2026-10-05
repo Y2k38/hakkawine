@@ -1,42 +1,47 @@
 defmodule Hakkawine.ProxyDrivers.AnyTLS do
   alias Hakkawine.ProxyDrivers.Config
 
-  @clash_server_template """
-  - name: anytls-in
-    type: anytls
-    listen: 0.0.0.0
-    port: <%= endpoint.port %>
-    users:
-      user_<%= endpoint.config.user_id %>: <%= endpoint.config.user_uuid %>
-    certificate: <%= endpoint.config.certificate %>
-    private-key: <%= endpoint.config.private_key %>
-    udp: <%= endpoint.config.enable_udp %>
-  """
-
-  @clash_client_template """
-  - name: <%= endpoint.name %>
-    type: anytls
-    server: <%= endpoint.host %>
-    port: <%= endpoint.port %>
-    password: <%= endpoint.config.user_uuid %>
-    client-fingerprint: <%= fp %>
-    udp: <%= endpoint.config.enable_udp %>
-    sni: <%= endpoint.obfs_host %>
-    skip-cert-verify: <%= endpoint.config.skip_cert_verify %>
-  """
-
-  def build_client_uri(endpoint) do
-    userinfo = endpoint.config.user_uuid
-    query = build_query_params(endpoint) |> URI.encode_query()
-
-    "anytls://#{userinfo}@#{endpoint.host}:#{endpoint.port}?#{query}##{URI.encode_www_form(endpoint.name)}"
+  def to_clash_map(:client, config) do
+    %{
+      "name" => config.name,
+      "type" => "anytls",
+      "server" => config.host,
+      "port" => config.port,
+      "password" => config.sub_uuid,
+      "client-fingerprint" => config.fingerprint,
+      "udp" => config.enable_udp,
+      "sni" => config.obfs_host,
+      "skip-cert-verify" => config.skip_cert_verify
+    }
   end
 
-  defp build_query_params(endpoint) do
+  def to_clash_map(:server, config) do
     %{
-      "peer" => endpoint.config.obfs_host,
-      "insecure" => Config.bool_to_flag(endpoint.config.skip_cert_verify),
-      "fingerprint" => Config.get_random_fingerprint()
+      "name" => "anytls-in",
+      "type" => "anytls",
+      "listen" => "0.0.0.0",
+      "port" => config.port,
+      "users" => %{
+        "user_#{config.sub_id}" => config.sub_uuid,
+      },
+      "certificate" => config.certificate,
+      "private-key" => config.private_key,
+      "udp" => config.enable_udp,
+    }
+  end
+
+  def to_uri(config) do
+    userinfo = config.sub_uuid
+    query = build_query_params(config) |> URI.encode_query()
+
+    "anytls://#{userinfo}@#{config.host}:#{config.port}?#{query}##{URI.encode_www_form(config.name)}"
+  end
+
+  defp build_query_params(config) do
+    %{
+      "peer" => config.obfs_host,
+      "insecure" => Config.bool_to_flag(config.skip_cert_verify),
+      "fingerprint" => config.fingerprint,
     }
   end
 end

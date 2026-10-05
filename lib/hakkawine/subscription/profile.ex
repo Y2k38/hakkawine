@@ -7,11 +7,12 @@ defmodule Hakkawine.Subscription.Profile do
     field :type, :string, default: "application/yaml"
     field :filename, :string, default: "config.yaml"
     field :title, :string
-    field :etag, :string
-    field :interval, :integer, default: 24
+    field :update_interval, :integer, default: 24
   end
 
-  def new(attrs) do
-    struct!(__MODULE__, attrs)
+  def new(attrs) when is_map(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, __MODULE__.__schema__(:fields))
+    |> apply_action(:insert)
   end
 end

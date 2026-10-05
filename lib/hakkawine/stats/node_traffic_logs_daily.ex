@@ -1,9 +1,9 @@
-defmodule Hakkawine.Metrics.NodeTrafficLogDaily do
+defmodule Hakkawine.Stats.NodeTrafficLogsDaily do
   use Ecto.Schema
 
   @primary_key false
   schema "node_traffic_logs_daily" do
-    field :bucket_5m, :utc_datetime
+    field :bucket_day, :utc_datetime
     field :node_id, :integer
     field :user_id, :integer
     field :subscription_id, :integer

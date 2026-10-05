@@ -22,13 +22,11 @@ defmodule Hakkawine.Billing.Workers.CreateSubscription do
     if Subscriptions.has_subscription_for_order?(order.id) do
       :ok
     else
-      # 执行真正的创建/开通订阅逻辑
       case Subscriptions.create_subscription_for_user(user, order) do
         {:ok, _subscription} ->
           :ok
 
         {:error, reason} ->
-          # 返回 error 触发 Oban 的指数退避自动重试
           {:error, reason}
       end
     end

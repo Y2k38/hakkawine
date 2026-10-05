@@ -1,5 +1,6 @@
 defmodule Hakkawine.Infra do
   import Ecto.Query
+
   alias Hakkawine.Repo
   alias Hakkawine.Infra.OBFSDomain
 
