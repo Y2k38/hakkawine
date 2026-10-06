@@ -1,6 +1,8 @@
 defmodule Hakkawine.Infra.NodeTelemetry do
   use Ecto.Schema
 
+  import Ecto.Changeset
+
   @primary_key false
   embedded_schema do
     field :reported_at, :utc_datetime_usec
