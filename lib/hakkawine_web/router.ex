@@ -1,6 +1,7 @@
 defmodule HakkawineWeb.Router do
   use HakkawineWeb, :router
 
+  alias HakkawineWeb.Plugs.BlockQqWechat
   alias HakkawineWeb.Plugs.FetchCurrentUser
   alias HakkawineWeb.Plugs.EnsureAuthenticated
   alias HakkawineWeb.Plugs.RedirectIfAuthenticated
@@ -13,6 +14,7 @@ defmodule HakkawineWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
 
+    plug BlockQqWechat
     plug FetchCurrentUser
   end
 
