@@ -8,21 +8,16 @@ defmodule Hakkawine.Infra.Node do
     field :name, :string
     field :secret_hash, :string
     field :status, Ecto.Enum, values: [:pending, :active, :offline, :disabled]
-    field :endpoints, {:array, :string}
-    field :pick_strategy, Ecto.Enum, values: [:pick_first,:prefer_ipv4,:prefer_ipv6,:prefer_domain,:pick_random]
+    field :address, :string
     field :protocol, :string
     field :port_base, :integer
     field :stat_base, :integer
     field :port_capacity, :integer
-    field :cpu_cores, :integer
-    field :ram_mb, :integer
-    field :ssd_mb, :integer
-    field :bandwidth_mbps, :integer
+    field :max_sub_count, :integer
+    field :rate, :decimal
+    field :weight, :integer
     field :monthly_traffic_bytes, :integer
     field :traffic_reset_day, :integer
-    field :weight, :integer
-    field :max_slot_count, :integer
-    field :rate, :decimal
     field :labels, :map
 
     timestamps(
@@ -54,7 +49,7 @@ defmodule Hakkawine.Infra.Node do
         else
           {:error, :invalid_host}
         end
-      end
+    end
   end
 
   defp valid_domain?(host) do

@@ -35,13 +35,18 @@ defmodule Hakkawine.AccountsTest do
       user_account = user_account_fixture()
       update_attrs = %{email: "some updated email"}
 
-      assert {:ok, %UserAccount{} = user_account} = Accounts.update_user_account(user_account, update_attrs)
+      assert {:ok, %UserAccount{} = user_account} =
+               Accounts.update_user_account(user_account, update_attrs)
+
       assert user_account.email == "some updated email"
     end
 
     test "update_user_account/2 with invalid data returns error changeset" do
       user_account = user_account_fixture()
-      assert {:error, %Ecto.Changeset{}} = Accounts.update_user_account(user_account, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.update_user_account(user_account, @invalid_attrs)
+
       assert user_account == Accounts.get_user_account!(user_account.id)
     end
 

@@ -1,9 +1,11 @@
-defmodule Hakkawine.Repo.Migrations.CreateCheckoutTables do
+defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
   use Ecto.Migration
 
   def up do
     execute "CREATE TYPE order_type AS ENUM('plan_purchase', 'plan_renew', 'plan_upgrade', 'traffic_reset_fee', 'traffic_addon', 'balance_recharge');"
+
     execute "CREATE TYPE order_status AS ENUM('pending', 'processing', 'completed', 'cancelled', 'failed', 'refunded', 'disputed');"
+
     execute "CREATE TYPE billing_cycle AS ENUM('monthly', 'quarterly', 'half_yearly', 'yearly', 'one_time');"
 
     create table(:orders, primary_key: false) do
@@ -24,7 +26,7 @@ defmodule Hakkawine.Repo.Migrations.CreateCheckoutTables do
       add :coupon_code, :string, size: 32
       add :coupon_snapshot, :map
       add :price_snapshot, :map
-      add :payment_gateway_id, :bigint
+      add :payment_method_id, :bigint
       add :payment_driver, :string, size: 32
       add :paid_at, :timestamptz
       add :note, :string
@@ -37,18 +39,22 @@ defmodule Hakkawine.Repo.Migrations.CreateCheckoutTables do
     end
 
     create unique_index(:orders, [:order_no], name: :uk_orders_order_no)
-    create index(:orders, [:user_id, :status, "created_at DESC"], name: :idx_orders_user_status_created)
 
-    create table(:payment_gateways, primary_key: false) do
+    create index(:orders, [:user_id, :status, "created_at DESC"],
+             name: :idx_orders_user_status_created
+           )
+
+    create table(:payment_methods, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
+      add :code, :string, size: 32, null: false
       add :payment_driver, :string, size: 32, null: false
       add :name, :string, size: 64, null: false
+      add :description, :string, size: 255, null: false
       add :icon_url, :string, size: 255, null: false
-      add :min_tx_amount, :decimal, precision: 38, scale: 18, null: false, default: 0
+      add :min_tx_amount, :decimal, precision: 38, scale: 18
       add :max_tx_amount, :decimal, precision: 38, scale: 18
       add :handling_fee_fixed, :decimal, precision: 38, scale: 18
       add :handling_fee_percent, :decimal, precision: 38, scale: 18
-      add :config, :map, null: false, default: %{}
       add :is_enable, :boolean, null: false, default: true
       add :is_visible, :boolean, null: false, default: true
       add :is_default, :boolean, null: false, default: false
@@ -61,6 +67,37 @@ defmodule Hakkawine.Repo.Migrations.CreateCheckoutTables do
       )
     end
 
+    create unique_index(:payment_methods, [:code], name: :uk_payment_methods_code)
+
+    create table(:payment_accounts, primary_key: false) do
+      add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
+      add :payment_method_id, :bigint, null: false
+      add :name, :string, size: 64, null: false
+      add :is_enable, :boolean, null: false, default: true
+      add :weight, :integer, null: false, default: 1
+      add :config, :jsonb, null: false, default: "{}"
+      add :min_tx_amount, :decimal, precision: 38, scale: 18
+      add :max_tx_amount, :decimal, precision: 38, scale: 18
+      add :daily_limit_amount, :decimal, precision: 38, scale: 18
+      add :daily_accumulated_amount, :decimal, precision: 38, scale: 18, default: 0
+      add :daily_limit_count, :integer
+      add :daily_accumulated_count, :integer, null: false, default: 0
+      add :yearly_limit_amount, :decimal, precision: 38, scale: 18
+      add :yearly_accumulated_amount, :decimal, precision: 38, scale: 18, default: 0
+      add :last_daily_reset_at, :timestamptz, default: fragment("NOW()")
+      add :last_yearly_reset_at, :timestamptz, default: fragment("NOW()")
+
+      timestamps(
+        type: :timestamptz,
+        inserted_at: :created_at,
+        default: fragment("NOW()")
+      )
+    end
+
+    create index(:payment_accounts, [:payment_method_id, :is_enable],
+             name: :idx_payment_accounts_method
+           )
+
     execute "CREATE TYPE payment_record_status AS ENUM('pending', 'paid', 'failed', 'expired', 'refunded');"
 
     create table(:payment_records, primary_key: false) do
@@ -70,7 +107,8 @@ defmodule Hakkawine.Repo.Migrations.CreateCheckoutTables do
       add :status, :payment_record_status, null: false, default: "pending"
       add :order_id, :bigint, null: false
       add :user_id, :bigint, null: false
-      add :payment_gateway_id, :bigint, null: false
+      add :payment_method_id, :bigint, null: false
+      add :payment_account_id, :bigint, null: false
       add :payment_driver, :string, size: 32, null: false
       add :amount, :decimal, precision: 38, scale: 18, null: false
       add :gateway_currency, :string, size: 16, null: false
@@ -86,9 +124,17 @@ defmodule Hakkawine.Repo.Migrations.CreateCheckoutTables do
     end
 
     create unique_index(:payment_records, [:trade_no], name: :uk_payment_records_trade_no)
-    create unique_index(:payment_records, [:payment_gateway_id, :gateway_trade_no], name: :uk_payment_records_gateway_trade, where: "gateway_trade_no IS NOT NULL")
+
+    create unique_index(:payment_records, [:payment_method_id, :gateway_trade_no],
+             name: :uk_payment_records_gateway_trade,
+             where: "gateway_trade_no IS NOT NULL"
+           )
+
     create index(:payment_records, [:order_id, :status], name: :idx_payment_records_order_status)
-    create index(:payment_records, [:user_id, :status, "created_at DESC"], name: :idx_payment_records_user_status_created)
+
+    create index(:payment_records, [:user_id, :status, "created_at DESC"],
+             name: :idx_payment_records_user_status_created
+           )
 
     create table(:user_balances, primary_key: false) do
       add :user_id, :bigint, primary_key: true, null: false
@@ -123,22 +169,26 @@ defmodule Hakkawine.Repo.Migrations.CreateCheckoutTables do
       )
     end
 
-    create index(:user_balance_logs, [:user_id, "created_at DESC"], name: :idx_balance_logs_user_id)
+    create index(:user_balance_logs, [:user_id, "created_at DESC"],
+             name: :idx_balance_logs_user_id
+           )
   end
 
   def down do
-    drop_if_exists index(:orders, name: :idx_balance_logs_user_id)
-    drop_if_exists index(:orders, name: :idx_payment_records_user_status_created)
-    drop_if_exists index(:orders, name: :idx_payment_records_order_status)
-    drop_if_exists index(:orders, name: :uk_payment_records_gateway_trade)
-    drop_if_exists index(:orders, name: :uk_payment_records_trade_no)
+    drop_if_exists index(:user_balance_logs, name: :idx_balance_logs_user_id)
+    drop_if_exists index(:payment_records, name: :idx_payment_records_user_status_created)
+    drop_if_exists index(:payment_records, name: :idx_payment_records_order_status)
+    drop_if_exists index(:payment_records, name: :uk_payment_records_gateway_trade)
+    drop_if_exists index(:payment_records, name: :uk_payment_records_trade_no)
+    drop_if_exists index(:payment_accounts, name: :idx_payment_accounts_gateway)
+    drop_if_exists index(:payment_methods, name: :uk_payment_methods_code)
     drop_if_exists index(:orders, name: :idx_orders_user_status_created)
     drop_if_exists index(:orders, name: :uk_orders_order_no)
 
     drop_if_exists table(:user_balance_logs)
     drop_if_exists table(:user_balances)
     drop_if_exists table(:payment_records)
-    drop_if_exists table(:payment_gateways)
+    drop_if_exists table(:payment_methods)
     drop_if_exists table(:orders)
 
     execute "DROP TYPE IF EXISTS balance_log_type;"

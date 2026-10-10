@@ -73,6 +73,7 @@ defmodule Hakkawine.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.3"},
       {:bandit, "~> 1.8"},
+      {:phoenix_bakery, "~> 1.0"},
       {:tz, "~> 0.28.2"},
       {:ecto_network, "~> 1.6.1"},
       {:argon2_elixir, "~> 4.0"},

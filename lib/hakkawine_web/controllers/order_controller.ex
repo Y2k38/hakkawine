@@ -37,14 +37,11 @@ defmodule HakkawineWeb.OrderController do
   end
 
   def status(_conn, _params) do
-
   end
 
   def success(_conn, _params) do
-
   end
 
   def cancel(_conn, _params) do
-
   end
 end

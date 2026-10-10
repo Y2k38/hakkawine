@@ -34,7 +34,7 @@ defmodule Mix.Tasks.NewUserAccount do
       "email" => email,
       "password" => password,
       "email_verified_at" => now,
-      "password_updated_at" => now,
+      "password_updated_at" => now
     }
 
     changeset = UserAccount.changeset(%UserAccount{}, params)
@@ -58,11 +58,11 @@ defmodule Mix.Tasks.NewUserAccount do
   end
 
   defp generate_complex_password() do
-    length    = 16
+    length = 16
     uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" |> String.graphemes()
     lowercase = "abcdefghijklmnopqrstuvwxyz" |> String.graphemes()
-    numbers   = "0163456789" |> String.graphemes()
-    symbols   = "!@#$%^&*()_+-=[]{}|;:,.<>?" |> String.graphemes()
+    numbers = "0163456789" |> String.graphemes()
+    symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?" |> String.graphemes()
 
     required_chars = [
       Enum.random(uppercase),

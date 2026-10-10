@@ -21,8 +21,16 @@ defmodule Hakkawine.System.NodeLabel do
     node_label
     |> cast(attrs, [:category, :key, :name, :is_enabled])
     |> validate_required([:category, :key, :name, :is_enabled])
-    |> validate_length(:category, min: 1, max: 32, message: "must be between 1 and 32 characters long")
+    |> validate_length(:category,
+      min: 1,
+      max: 32,
+      message: "must be between 1 and 32 characters long"
+    )
     |> validate_length(:key, min: 1, max: 64, message: "must be between 1 and 64 characters long")
-    |> validate_length(:name, min: 1, max: 64, message: "must be between 1 and 64 characters long")
+    |> validate_length(:name,
+      min: 1,
+      max: 64,
+      message: "must be between 1 and 64 characters long"
+    )
   end
 end

@@ -7,7 +7,9 @@ defmodule Hakkawine.Catalog.ProductPrice do
 
   @primary_key {:id, :id, autogenerate: true}
   schema "product_prices" do
-    field :type, Ecto.Enum, values: [:monthly, :quarterly, :half_yearly, :yearly, :onetime, :reset]
+    field :type, Ecto.Enum,
+      values: [:monthly, :quarterly, :half_yearly, :yearly, :onetime, :reset]
+
     field :amount, :decimal
     field :sort_order, :integer
     field :is_default, :boolean

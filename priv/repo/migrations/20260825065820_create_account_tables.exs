@@ -3,6 +3,7 @@ defmodule Hakkawine.Repo.Migrations.CreateAccountTables do
 
   def up do
     execute "CREATE TYPE user_account_type AS ENUM ('customer', 'staff', 'system_admin');"
+
     execute "CREATE TYPE user_status AS ENUM ('unverified', 'active', 'suspended', 'deactivating');"
 
     create table(:user_accounts, primary_key: false) do
@@ -30,7 +31,12 @@ defmodule Hakkawine.Repo.Migrations.CreateAccountTables do
     end
 
     create unique_index(:user_accounts, [:email], name: :uk_user_accounts_active_email)
-    create unique_index(:user_accounts, [:account_type], where: "account_type = 'system_admin'", name: :idx_single_system_admin)
+
+    create unique_index(:user_accounts, [:account_type],
+             where: "account_type = 'system_admin'",
+             name: :idx_single_system_admin
+           )
+
     create unique_index(:user_accounts, [:invite_code], name: :uk_user_accounts_invite_code)
     create index(:user_accounts, [:invited_by], name: :idx_user_accounts_invited_by)
   end

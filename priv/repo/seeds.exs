@@ -24,7 +24,9 @@ defmodule Hakkawine.DatabaseSeeder do
         conflict_target: conflict_target
       )
 
-    IO.puts("  [Seeded] #{inspect(schema)}: Processed #{length(entries)} items (Rows affected: #{count})")
+    IO.puts(
+      "  [Seeded] #{inspect(schema)}: Processed #{length(entries)} items (Rows affected: #{count})"
+    )
   end
 end
 
@@ -34,7 +36,7 @@ seed_files = [
   "node_labels.exs",
   "obfs_domain.exs",
   "settings.exs",
-  "user_audit_actions.exs",
+  "user_audit_actions.exs"
 ]
 
 IO.puts("\nStarting database seeding process...")

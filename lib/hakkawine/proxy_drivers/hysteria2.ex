@@ -32,7 +32,7 @@ defmodule Hakkawine.ProxyDrivers.Hysteria2 do
       "server" => "0.0.0.0",
       "port" => config.port,
       "users" => %{
-        "user_#{config.sub_uuid}" => config.password,
+        "user_#{config.sub_uuid}" => config.password
       },
       "certificate" => config.certificate,
       "private-key" => config.private_key

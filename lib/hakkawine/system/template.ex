@@ -25,7 +25,11 @@ defmodule Hakkawine.System.Template do
     node_label
     |> cast(attrs, [:name, :type, :file_ext, :match_rules, :content])
     |> validate_required([:name, :type, :file_ext, :match_rules, :content])
-    |> validate_length(:name, min: 1, max: 64, message: "must be between 1 and 64 characters long")
+    |> validate_length(:name,
+      min: 1,
+      max: 64,
+      message: "must be between 1 and 64 characters long"
+    )
     |> validate_json_field(:match_rules, max_bytes: 4096)
   end
 end

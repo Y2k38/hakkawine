@@ -12,67 +12,6 @@ defmodule HakkawineWeb.Layouts do
   embed_templates "layouts/*"
 
   @doc """
-  Renders your app layout.
-
-  This function is typically invoked from every template,
-  and it often contains your application menu, sidebar,
-  or similar.
-
-  ## Examples
-
-      <Layouts.app flash={@flash}>
-        <h1>Content</h1>
-      </Layouts.app>
-
-  """
-  attr :flash, :map, required: true, doc: "the map of flash messages"
-
-  attr :current_scope, :map,
-    default: nil,
-    doc: "the current [scope](https://phoenix.hexdocs.pm/scopes.html)"
-
-  slot :inner_block, required: true
-
-  def app(assigns) do
-    ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://phoenix.hexdocs.pm/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
-
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
-
-    <.flash_group flash={@flash} />
-    """
-  end
-
-  @doc """
   Shows the flash group with standard titles and content.
 
   ## Examples
@@ -154,6 +93,58 @@ defmodule HakkawineWeb.Layouts do
       >
         <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
       </button>
+    </div>
+    """
+  end
+
+  def theme_toggle_vertical(assigns) do
+    ~H"""
+    <div class="dropdown !relative !inline-flex !items-center !justify-center w-8 h-8">
+      <div
+        tabindex="0"
+        role="button"
+        class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-base-200 transition-colors cursor-pointer select-none"
+      >
+        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+      </div>
+
+      <div
+        tabindex="0"
+        class="dropdown-content z-[50] mt-2 !top-full !left-1/2 !-translate-x-1/2"
+      >
+        <div class="card relative flex flex-col items-center border border-base-300 bg-base-300 rounded-full w-10 p-1 shadow-xl">
+          <div
+            class="absolute w-8 h-8 rounded-full border border-base-200 bg-base-100 brightness-150 top-1 transition-[top] duration-200 ease-out [[data-theme=light]_&]:top-[36px] [[data-theme=dark]_&]:top-[68px] [[data-theme-source=system]_&]:!top-1 shadow-inner z-0"
+          />
+
+          <button
+            class="relative flex items-center justify-center w-8 h-8 cursor-pointer z-10"
+            phx-click={JS.dispatch("phx:set-theme")}
+            data-phx-theme="system"
+            title="System"
+          >
+            <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+          </button>
+
+          <button
+            class="relative flex items-center justify-center w-8 h-8 cursor-pointer z-10"
+            phx-click={JS.dispatch("phx:set-theme")}
+            data-phx-theme="light"
+            title="Light"
+          >
+            <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+          </button>
+
+          <button
+            class="relative flex items-center justify-center w-8 h-8 cursor-pointer z-10"
+            phx-click={JS.dispatch("phx:set-theme")}
+            data-phx-theme="dark"
+            title="Dark"
+          >
+            <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+          </button>
+        </div>
+      </div>
     </div>
     """
   end

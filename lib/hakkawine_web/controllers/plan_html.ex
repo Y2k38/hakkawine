@@ -14,6 +14,7 @@ defmodule HakkawineWeb.PlanHTML do
   def get_reset_price(prices) when is_list(prices) do
     Enum.find(prices, &(&1.type == :reset))
   end
+
   def get_reset_price(_), do: nil
 
   def format_speed(nil), do: "Unlimited"

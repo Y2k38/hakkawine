@@ -38,7 +38,7 @@ defmodule Hakkawine.ProxyDrivers.Vless do
       "tls" => true,
       "servername" => config.obfs_host,
       "alpn" => config.alpn,
-      "client-fingerprint" => config.fingerprint,
+      "client-fingerprint" => config.fingerprint
     }
 
     if config.vless_network == :xhttp do
@@ -58,10 +58,12 @@ defmodule Hakkawine.ProxyDrivers.Vless do
       "type" => "vless",
       "server" => "0.0.0.0",
       "port" => config.port,
-      "users" => [%{
-        "user_#{config.sub_id}" => 1,
-        "uuid" => config.sub_uuid
-      }],
+      "users" => [
+        %{
+          "user_#{config.sub_id}" => 1,
+          "uuid" => config.sub_uuid
+        }
+      ],
       "reality-config" => %{
         "dest" => "#{config.obfs_host}:#{config.obfs_port}",
         "private-key" => config.vless_private_key,

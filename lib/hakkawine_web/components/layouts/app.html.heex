@@ -1,0 +1,75 @@
+<div class="min-h-screen bg-base-200 text-base-content flex flex-col">
+	<header class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-sm">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+			
+		<div class="flex items-center gap-4">
+		<div class="dropdown md:hidden">
+			<div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+			</svg>
+			</div>
+			<ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 border border-base-300">
+			<li><a href={~p"/home"}>Dashboard</a></li>
+			<li><a href={~p"/plans"}>Shop</a></li>
+			<li><a href={~p"/tickets"}>Tickets</a></li>
+			<li><a href={~p"/knowledges"}>Knowledgebase</a></li>
+			<li><a href={~p"/announcements"}>Announcements</a></li>
+			<li><a href={~p"/affiliate"}>Affiliate</a></li>
+			<li><a href={~p"/services"}>My Services</a></li>
+			<li><a href={~p"/more"}>More</a></li>
+			</ul>
+		</div>
+
+		<a href={~p"/home"} class="font-bold text-lg tracking-wider">
+			HAKKAWINE
+		</a>
+
+		<nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+			<a href={~p"/home"} class="px-3 py-1.5 rounded-md hover:bg-base-200 transition-colors">Dashboard</a>
+			<a href={~p"/plans"} class="px-3 py-1.5 rounded-md hover:bg-base-200 transition-colors">Shop</a>
+			<a href={~p"/tickets"} class="px-3 py-1.5 rounded-md hover:bg-base-200 transition-colors">Tickets</a>
+			<a href={~p"/knowledges"} class="px-3 py-1.5 rounded-md hover:bg-base-200 transition-colors">Knowledgebase</a>
+			<a href={~p"/announcements"} class="px-3 py-1.5 rounded-md hover:bg-base-200 transition-colors">Announcements</a>
+			
+			<div class="dropdown dropdown-hover">
+			<div tabindex="0" role="button" class="px-3 py-1.5 rounded-md hover:bg-base-200 transition-colors flex items-center gap-1 cursor-pointer">
+				<span>More</span>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+				</svg>
+			</div>
+			<ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-md bg-base-100 rounded-xl w-44 border border-base-300 pt-3">
+				<li><a href={~p"/affiliate"}>Affiliate</a></li>
+				<li><a href={~p"/services"}>My Services</a></li>
+			</ul>
+			</div>
+		</nav>
+		</div>
+
+		<div class="flex items-center gap-2 md:gap-3">
+		<Layouts.theme_toggle_vertical />
+
+		<div class="dropdown dropdown-end">
+			<div tabindex="0" role="button" class="text-sm font-semibold cursor-pointer flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors">
+			<span><%= assigns[:current_user] && assigns[:current_user].email || "Account" %></span>
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+			</svg>
+			</div>
+			<ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-56 mt-2 border border-base-300">
+			<li><a href={~p"/account"}>My Account</a></li>
+			<li><.link href={~p"/auth/log_out"} method="delete" class="text-error">Log Out</.link></li>
+			</ul>
+		</div>
+		</div>
+
+	</div>
+	</header>
+
+	<.flash_group flash={@flash} />
+
+	<main class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+	{@inner_content}
+	</main>
+</div>

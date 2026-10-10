@@ -1,0 +1,31 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold">Tickets</h1>
+    <p class="text-sm text-base-content/60 mt-1">Submit issues and check support replies</p>
+  </div>
+
+  <div class="flex flex-wrap gap-2">
+    <button class="btn btn-sm btn-neutral font-medium">In Progress</button>
+    <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Pending</button>
+    <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Replied</button>
+    <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Waiting for Support</button>
+    <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Closed</button>
+    <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">All</button>
+  </div>
+
+  <div class="card bg-base-100 shadow-sm border border-base-300">
+    <div class="card-body items-center text-center py-16">
+      <div class="w-16 h-16 rounded-2xl bg-warning/10 text-warning flex items-center justify-center text-2xl font-bold mb-3">
+        🎫
+      </div>
+      <h2 class="card-title text-base font-bold">No Tickets</h2>
+      <p class="text-xs text-base-content/60 max-w-sm mb-6">
+        You can submit a ticket when you encounter issues, and we will reply to you as soon as possible.
+      </p>
+      <div class="flex gap-3">
+        <a href={~p"/tickets/new"} class="btn btn-warning text-warning-content btn-sm px-6">New Ticket</a>
+        <a href={~p"/knowledge"} class="btn btn-ghost bg-base-200/60 btn-sm px-6">Knowledgebase</a>
+      </div>
+    </div>
+  </div>
+</div>

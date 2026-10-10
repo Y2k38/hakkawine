@@ -4,31 +4,33 @@
   <h2 class="text-2xl font-bold text-base-content mb-6">Create an Account</h2>
 
   <.form :let={f} for={@changeset} action={~p"/auth/register"} class="space-y-4">
-    
     <div class="form-control w-full">
       <label class="label" for="email">
         <span class="label-text font-medium">Email Address</span>
       </label>
-      <input 
+      <input
         id="email"
-        type="email" 
+        type="email"
         name={f[:email].name}
         value={f[:email].value}
-        required 
-        placeholder="name@company.com" 
-        class={["input input-bordered w-full focus:outline-primary", f[:email].errors != [] && "input-error"]} 
+        required
+        placeholder="name@company.com"
+        class={[
+          "input input-bordered w-full focus:outline-primary",
+          f[:email].errors != [] && "input-error"
+        ]}
       />
       <div :for={{msg, _opts} <- f[:email].errors} class="label py-1">
-        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+        <span class="label-text-alt text-error font-medium">{msg}</span>
       </div>
     </div>
 
     <div class="hidden" aria-hidden="true">
-      <input 
-        type="text" 
-        name={f[:phone_number].name} 
-        tabindex="-1" 
-        autocomplete="off" 
+      <input
+        type="text"
+        name={f[:phone_number].name}
+        tabindex="-1"
+        autocomplete="off"
       />
     </div>
 
@@ -38,28 +40,32 @@
       </label>
       <div class="join w-full">
         <div class="grow min-w-0">
-          <input 
+          <input
             id="verification-code"
-            type="text" 
+            type="text"
             name={f[:verification_code].name}
             value={f[:verification_code].value}
-            autocomplete="one-time-code" 
-            required 
-            placeholder="6-digit code" 
-            class={["input input-bordered join-item w-full focus:outline-primary", f[:verification_code].errors != [] && "input-error"]} 
+            autocomplete="one-time-code"
+            required
+            placeholder="6-digit code"
+            class={[
+              "input input-bordered join-item w-full focus:outline-primary",
+              f[:verification_code].errors != [] && "input-error"
+            ]}
           />
         </div>
         <div class="shrink-0">
-          <button 
-            type="button" 
+          <button
+            type="button"
             id="send-code-btn"
-            class="btn btn-primary join-item whitespace-nowrap">
+            class="btn btn-primary join-item whitespace-nowrap"
+          >
             Get Code
           </button>
         </div>
       </div>
       <div :for={{msg, _opts} <- f[:verification_code].errors} class="label py-1">
-        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+        <span class="label-text-alt text-error font-medium">{msg}</span>
       </div>
     </div>
 
@@ -67,17 +73,20 @@
       <label class="label" for="password">
         <span class="label-text font-medium">Password</span>
       </label>
-      <input 
+      <input
         id="password"
-        type="password" 
+        type="password"
         name={f[:password].name}
         value={f[:password].value}
-        required 
-        placeholder="12–72 chars, 1 lowercase, 1 uppercase, 1 digit, 1 special" 
-        class={["input input-bordered w-full focus:outline-primary", f[:password].errors != [] && "input-error"]} 
+        required
+        placeholder="12–72 chars, 1 lowercase, 1 uppercase, 1 digit, 1 special"
+        class={[
+          "input input-bordered w-full focus:outline-primary",
+          f[:password].errors != [] && "input-error"
+        ]}
       />
       <div :for={{msg, _opts} <- f[:password].errors} class="label py-1">
-        <span class="label-text-alt text-error font-medium"><%= msg %></span>
+        <span class="label-text-alt text-error font-medium">{msg}</span>
       </div>
     </div>
 
@@ -86,7 +95,6 @@
         Submit
       </button>
     </div>
-
   </.form>
 </div>
 

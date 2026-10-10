@@ -11,6 +11,7 @@ defmodule HakkawineWeb.Router do
     plug :fetch_session
     plug :fetch_live_flash
     plug :put_root_layout, html: {HakkawineWeb.Layouts, :root}
+    plug :put_layout, html: {HakkawineWeb.Layouts, :app}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
 
@@ -18,14 +19,19 @@ defmodule HakkawineWeb.Router do
     plug FetchCurrentUser
   end
 
+  pipeline :guest_browser do
+    plug :browser
+    plug :put_layout, false
+  end
+
   scope "/", HakkawineWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", PageController, :index
   end
 
   scope "/auth", HakkawineWeb do
-    pipe_through [:browser, RedirectIfAuthenticated]
+    pipe_through [:guest_browser, RedirectIfAuthenticated]
 
     get "/register", AuthController, :register_page
     post "/send-code", AuthController, :send_code
@@ -50,7 +56,9 @@ defmodule HakkawineWeb.Router do
   scope "/", HakkawineWeb do
     pipe_through [:browser, EnsureAuthenticated]
 
-    get "/plan/list", PlanController, :index
+    get "/home", PageController, :home
+
+    get "/plans", PlanController, :index
 
     get "/checkout/sub/new", CheckoutController, :new_sub
     get "/checkout/sub/renew", CheckoutController, :renew_sub
@@ -63,6 +71,15 @@ defmodule HakkawineWeb.Router do
     get "/order/status", OrderController, :status
     get "/order/success", OrderController, :success
     get "/order/cancel", OrderController, :cancel
+
+    get "/tickets", TicketController, :index
+    get "/tickets/new", TicketController, :new
+    get "/knowledges", KnowledgeController, :index
+    get "/announcements", AnnouncementController, :index
+    get "/affiliate", AffiliateController, :index
+    get "/services", ServiceController, :index
+    get "/services/:sub_id", ServiceController, :details
+    get "/account", AccountController, :index
   end
 
   pipeline :api do
@@ -72,7 +89,7 @@ defmodule HakkawineWeb.Router do
   scope "/api/v1", HakkawineWeb.Api.V1 do
     pipe_through :api
 
-    post "/payment/notify", PaymentController, :notify
+    post "/payments/notify/:driver", PaymentsController, :notify
 
     get "/sub/:uuid", SubscriptionController, :index
   end

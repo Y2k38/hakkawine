@@ -20,7 +20,7 @@ defmodule HakkawineWeb.FormatHelpers do
     if amount == Float.floor(amount) do
       trunc(amount) |> Integer.to_string()
     else
-      :erlang.float_to_binary(amount, [decimals: 2])
+      :erlang.float_to_binary(amount, decimals: 2)
     end
   end
 

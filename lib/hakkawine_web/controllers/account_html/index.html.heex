@@ -1,0 +1,153 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold">My Account</h1>
+    <p class="text-sm text-base-content/60 mt-1">Account, balance top-up, notifications, and billing records</p>
+  </div>
+
+  <div class="flex gap-2">
+    <button class={[
+      "btn btn-sm font-medium",
+      (assigns[:active_tab] || :account) == :account && "btn-neutral",
+      (assigns[:active_tab] || :account) != :account && "btn-ghost bg-base-200/60 font-normal"
+    ]}>
+      Account & Top-up
+    </button>
+    <button class={[
+      "btn btn-sm font-medium",
+      assigns[:active_tab] == :billing && "btn-neutral",
+      assigns[:active_tab] != :billing && "btn-ghost bg-base-200/60 font-normal"
+    ]}>
+      Billing Records
+    </button>
+  </div>
+
+  <%= if (assigns[:active_tab] || :account) == :account do %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body space-y-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-xs text-base-content/60 mb-1">Current Balance</div>
+              <div class="text-3xl font-extrabold text-warning">¥22.61</div>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-xs font-mono text-base-content/70">admin@example.com</span>
+                <span class="badge badge-success badge-sm text-success-content text-[10px] px-2 py-0.5">Verified</span>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Balance History</button>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Change Email</button>
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Change Password</button>
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Logged-in Devices</button>
+          </div>
+
+          <p class="text-xs text-base-content/60 leading-relaxed">
+            Balance can be used to buy plans, renewals, and add-on traffic, with no extra transaction fees.
+          </p>
+
+          <div class="pt-4 border-t border-base-300/40 flex justify-end">
+            <button class="btn btn-sm btn-error text-error-content px-6">Log Out</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body space-y-5">
+          <h2 class="card-title text-base font-bold">Top-up Amount</h2>
+
+          <div class="grid grid-cols-5 gap-2">
+            <button class="btn btn-sm btn-warning text-warning-content font-semibold">¥50</button>
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">¥100</button>
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">¥200</button>
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">¥300</button>
+            <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">¥500</button>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs text-base-content/60">Custom Amount (Integer)</label>
+            <input type="text" value="¥ 50" class="input input-bordered input-sm w-full bg-base-200/40 text-sm font-semibold" />
+          </div>
+
+          <div class="flex items-center justify-between text-xs text-base-content/60 pt-2">
+            <span>Pay ¥50.00</span>
+            <span>Current amount gets no bonus</span>
+          </div>
+
+          <button class="btn btn-warning text-warning-content w-full mt-2">Top-up Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+      <div class="card-body flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <h2 class="card-title text-base font-bold">Telegram Notification</h2>
+          <p class="text-xs text-base-content/60 max-w-xl">
+            Click the button to copy bind command and open Telegram bot. After binding, you can check-in, query plan, and receive notifications.
+          </p>
+        </div>
+        <button class="btn btn-warning text-warning-content btn-sm px-6 whitespace-nowrap">Bind Telegram</button>
+      </div>
+    </div>
+  <% else %>
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold">Billing Records</h2>
+        <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Refresh</button>
+      </div>
+
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body p-0">
+          <div class="overflow-x-auto">
+            <table class="table w-full text-sm">
+              <thead>
+                <tr class="text-xs text-base-content/60 border-b border-base-300/60">
+                  <th class="py-4 px-6">Order</th>
+                  <th class="py-4 px-6">Product / Service</th>
+                  <th class="py-4 px-6">Type</th>
+                  <th class="py-4 px-6">Amount</th>
+                  <th class="py-4 px-6">Gateway</th>
+                  <th class="py-4 px-6">Status</th>
+                  <th class="py-4 px-6">Created At</th>
+                  <th class="py-4 px-6 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-base-300/40 hover:bg-base-200/30">
+                  <td class="py-4 px-6 font-mono text-xs">#3911</td>
+                  <td class="py-4 px-6">
+                    <div class="font-semibold text-sm">Upgrade Plan</div>
+                    <div class="text-xs text-base-content/50 font-mono">Service ID #373398</div>
+                  </td>
+                  <td class="py-4 px-6">Upgrade Plan</td>
+                  <td class="py-4 px-6 font-semibold">¥32.39</td>
+                  <td class="py-4 px-6">Balance</td>
+                  <td class="py-4 px-6">
+                    <span class="text-success font-medium">Paid</span>
+                  </td>
+                  <td class="py-4 px-6 text-xs text-base-content/70">2026/9/4 14:40:06</td>
+                  <td class="py-4 px-6 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal">Details</button>
+                      <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal">Download PDF</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-base-content/60 pt-2">
+        <div>Total 1 item · Page 1</div>
+        <div class="flex gap-2">
+          <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal" disabled>Previous</button>
+          <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

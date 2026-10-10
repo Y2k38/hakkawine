@@ -29,7 +29,10 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
       )
     end
 
-    create unique_index(:products, [:code, :status], name: :uk_products_code_unique_draft_active, where: "status IN ('draft', 'active')")
+    create unique_index(:products, [:code, :status],
+             name: :uk_products_code_unique_draft_active,
+             where: "status IN ('draft', 'active')"
+           )
 
     execute "CREATE TYPE price_type AS ENUM( 'monthly', 'quarterly', 'half_yearly', 'yearly', 'onetime', 'reset');"
 
@@ -57,7 +60,9 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
       add :selector, :map, null: false, default: "{}"
     end
 
-    create unique_index(:plan_slots, [:product_id, :slot_name], name: :uk_plan_slots_product_slot_name)
+    create unique_index(:plan_slots, [:product_id, :slot_name],
+             name: :uk_plan_slots_product_slot_name
+           )
   end
 
   def down do

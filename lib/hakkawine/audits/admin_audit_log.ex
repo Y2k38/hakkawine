@@ -21,7 +21,15 @@ defmodule Hakkawine.Audits.AdminAuditLog do
 
   def changeset(admin_audit_log, attrs) do
     admin_audit_log
-    |> cast(attrs, [:operator_id, :action_code, :target_type, :target_id, :ip_address, :user_agent, :metadata])
+    |> cast(attrs, [
+      :operator_id,
+      :action_code,
+      :target_type,
+      :target_id,
+      :ip_address,
+      :user_agent,
+      :metadata
+    ])
     |> validate_required([:operator_id, :action_code])
   end
 end

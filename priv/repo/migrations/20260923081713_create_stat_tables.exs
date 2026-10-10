@@ -1,4 +1,4 @@
-defmodule Hakkawine.Repo.Migrations.CreateStatsTables do
+defmodule Hakkawine.Repo.Migrations.CreateStatTables do
   use Ecto.Migration
 
   def up do

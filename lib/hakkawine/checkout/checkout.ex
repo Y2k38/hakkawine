@@ -11,7 +11,7 @@ defmodule Hakkawine.Checkout do
   alias Hakkawine.Billing.Order
   alias Hakkawine.Billing.UserBalance
   alias Hakkawine.Billing.PaymentRecord
-  alias Hakkawine.Billing.PaymentGateway
+  alias Hakkawine.Billing.PaymentMethod
   alias Hakkawine.Billing.Workers.ExpireOrder
   alias Hakkawine.Billing.Workers.CreateSubscription
 
@@ -67,12 +67,12 @@ defmodule Hakkawine.Checkout do
 
         payable_base = Decimal.sub(after_discount, balance_deduct) |> Decimal.max(Decimal.new(0))
 
-        gateway = get_gateway(form.payment_driver)
-        payment_fee = PaymentGateway.get_handle_fee(gateway, payable_base)
+        method = get_payment_method(form.payment_driver)
+        payment_fee = PaymentMethod.get_handle_fee(method, payable_base)
 
         total_amount = Decimal.add(payable_base, payment_fee)
 
-        if PaymentGateway.exceeds_max_limit?(gateway, total_amount) do
+        if PaymentMethod.exceeds_max_limit?(method, total_amount) do
           {:error, :exceeds_max_limit}
         else
           {:ok,
@@ -91,7 +91,7 @@ defmodule Hakkawine.Checkout do
              coupon_code: form.coupon_code,
              coupon_snapshot: Coupon.to_snapshot(coupon),
              price_snapshot: ProductPrice.to_snapshot(price),
-             payment_gateway_id: gateway.id,
+             payment_method_id: method.id,
              payment_driver: form.payment_driver,
              idempotency_key: form.idempotency_key
            }}
@@ -133,8 +133,8 @@ defmodule Hakkawine.Checkout do
     |> Repo.one() || Decimal.new(0)
   end
 
-  defp get_gateway(payment_driver) do
-    PaymentGateway
+  defp get_payment_method(payment_driver) do
+    PaymentMethod
     |> where(payment_driver: ^payment_driver)
     |> where(is_enable: true)
     |> Repo.one()
@@ -157,7 +157,7 @@ defmodule Hakkawine.Checkout do
       status: "pending",
       order_id: order.id,
       user_id: order.user_id,
-      payment_gateway_id: order.payment_gateway_id,
+      payment_method_id: order.payment_method_id,
       payment_driver: order.payment_driver,
       amount: order.total_amount,
       gateway_currency: "USD",
@@ -182,7 +182,7 @@ defmodule Hakkawine.Checkout do
       #         {:ok, %{action_type: :redirect, payload: %{url: url}}}
 
       #       {:error, reason} ->
-      #         {:error, {:payment_gateway_error, reason}}
+      #         {:error, {:payment_method_error, reason}}
       #     end
 
       #   "alipay_private" ->
@@ -191,7 +191,7 @@ defmodule Hakkawine.Checkout do
       #         {:ok, %{action_type: :sdk, payload: params}}
 
       #       {:error, reason} ->
-      #         {:error, {:payment_gateway_error, reason}}
+      #         {:error, {:payment_method_error, reason}}
       #     end
 
       #   unknown ->

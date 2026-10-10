@@ -25,8 +25,28 @@ defmodule Hakkawine.Marketing.Coupon do
   @doc false
   def changeset(coupon, attrs) do
     coupon
-    |> cast(attrs, [:code, :name, :type, :value, :limit_use_count, :used_count, :limit_user_use_count, :start_at, :end_at, :is_active])
-    |> validate_required([:code, :name, :type, :value, :limit_use_count, :used_count, :limit_user_use_count, :is_active])
+    |> cast(attrs, [
+      :code,
+      :name,
+      :type,
+      :value,
+      :limit_use_count,
+      :used_count,
+      :limit_user_use_count,
+      :start_at,
+      :end_at,
+      :is_active
+    ])
+    |> validate_required([
+      :code,
+      :name,
+      :type,
+      :value,
+      :limit_use_count,
+      :used_count,
+      :limit_user_use_count,
+      :is_active
+    ])
   end
 
   def to_snapshot(%__MODULE__{} = coupon) do

@@ -1,5 +1,4 @@
 defmodule Hakkawine.Utils.RateLimiter do
-
   @lua_path Path.join([:code.priv_dir(:hakkawine), "lua", "rate_limiter.lua"])
   @external_resource @lua_path
   @lua_script File.read!(@lua_path)
@@ -30,15 +29,21 @@ defmodule Hakkawine.Utils.RateLimiter do
     args = ["EVALSHA", @script_sha, 1, key, now_ms, window_ms, limit, mode]
 
     case Redix.command(:redix, args) do
-      {:ok, 1} -> :allow
-      {:ok, 0} -> :deny
+      {:ok, 1} ->
+        :allow
+
+      {:ok, 0} ->
+        :deny
+
       {:error, %Redix.Error{message: "NOSCRIPT " <> _}} ->
         fallback_args = ["EVAL", @lua_script, 1, key, now_ms, window_ms, limit, mode]
+
         case Redix.command(:redix, fallback_args) do
           {:ok, 1} -> :allow
           {:ok, 0} -> :deny
           _ -> :allow
         end
+
       _other ->
         :allow
     end

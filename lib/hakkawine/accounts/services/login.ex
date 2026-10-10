@@ -14,7 +14,6 @@ defmodule Hakkawine.Accounts.Services.Login do
 
     with :allow <- RateLimiter.check_only(email_5m_key, 5, 300_000),
          :allow <- RateLimiter.check_only(email_24h_key, 30, 86_400_000) do
-
       case authenticate_user(email, password) do
         {:ok, user_account} ->
           RateLimiter.delete_keys([email_5m_key, email_24h_key])

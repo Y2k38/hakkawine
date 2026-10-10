@@ -22,11 +22,11 @@ defmodule Hakkawine.ProxyDrivers.AnyTLS do
       "listen" => "0.0.0.0",
       "port" => config.port,
       "users" => %{
-        "user_#{config.sub_id}" => config.sub_uuid,
+        "user_#{config.sub_id}" => config.sub_uuid
       },
       "certificate" => config.certificate,
       "private-key" => config.private_key,
-      "udp" => config.enable_udp,
+      "udp" => config.enable_udp
     }
   end
 
@@ -41,7 +41,7 @@ defmodule Hakkawine.ProxyDrivers.AnyTLS do
     %{
       "peer" => config.obfs_host,
       "insecure" => Config.bool_to_flag(config.skip_cert_verify),
-      "fingerprint" => config.fingerprint,
+      "fingerprint" => config.fingerprint
     }
   end
 end

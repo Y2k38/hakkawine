@@ -21,7 +21,12 @@ defmodule Hakkawine.SystemTest do
     end
 
     test "create_setting/1 with valid data creates a setting" do
-      valid_attrs = %{value: %{}, description: "some description", key: "some key", section: "some section"}
+      valid_attrs = %{
+        value: %{},
+        description: "some description",
+        key: "some key",
+        section: "some section"
+      }
 
       assert {:ok, %Setting{} = setting} = System.create_setting(valid_attrs)
       assert setting.value == %{}
@@ -36,7 +41,13 @@ defmodule Hakkawine.SystemTest do
 
     test "update_setting/2 with valid data updates the setting" do
       setting = setting_fixture()
-      update_attrs = %{value: %{}, description: "some updated description", key: "some updated key", section: "some updated section"}
+
+      update_attrs = %{
+        value: %{},
+        description: "some updated description",
+        key: "some updated key",
+        section: "some updated section"
+      }
 
       assert {:ok, %Setting{} = setting} = System.update_setting(setting, update_attrs)
       assert setting.value == %{}

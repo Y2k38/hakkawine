@@ -9,7 +9,7 @@ defmodule HakkawineWeb.Plugs.RedirectIfAuthenticated do
       conn
       |> redirect(to: "/")
       |> halt()
-    else 
+    else
       conn
     end
   end

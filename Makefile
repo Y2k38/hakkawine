@@ -4,5 +4,11 @@ init:
 	mix deps.compile
 	ecto.create
 
+fmt:
+	mix format
+
+check-fmt:
+	mix format --check-formatted
+
 run:
 	mix phx.server

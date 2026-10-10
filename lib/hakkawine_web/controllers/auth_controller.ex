@@ -7,45 +7,51 @@ defmodule HakkawineWeb.AuthController do
   alias HakkawineWeb.Plugs.RedisRateLimiter
 
   plug RedisRateLimiter,
-    [action_name: "ip_send_code_min", time_window: 60, max_attempts: 5]
-    when action in [:send_code]
-  plug RedisRateLimiter,
-    [action_name: "ip_send_code_daily", time_window: 86_400, max_attempts: 50]
-    when action in [:send_code]
+       [action_name: "ip_send_code_min", time_window: 60, max_attempts: 5]
+       when action in [:send_code]
 
   plug RedisRateLimiter,
-    [action_name: "ip_register_min", time_window: 60, max_attempts: 5]
-    when action in [:register]
-  plug RedisRateLimiter,
-    [action_name: "ip_register_daily", time_window: 86_400, max_attempts: 30]
-    when action in [:register]
+       [action_name: "ip_send_code_daily", time_window: 86_400, max_attempts: 50]
+       when action in [:send_code]
 
   plug RedisRateLimiter,
-    [action_name: "ip_log_in_min", time_window: 300, max_attempts: 20]
-    when action in [:log_in]
-  plug RedisRateLimiter,
-    [action_name: "ip_log_in_daily", time_window: 86_400, max_attempts: 200]
-    when action in [:log_in]
+       [action_name: "ip_register_min", time_window: 60, max_attempts: 5]
+       when action in [:register]
 
   plug RedisRateLimiter,
-    [action_name: "ip_forgot_password_min", time_window: 60, max_attempts: 3]
-    when action in [:forgot_password]
-  plug RedisRateLimiter,
-    [action_name: "ip_forgot_password_daily", time_window: 86_400, max_attempts: 20]
-    when action in [:forgot_password]
+       [action_name: "ip_register_daily", time_window: 86_400, max_attempts: 30]
+       when action in [:register]
 
   plug RedisRateLimiter,
-    [action_name: "ip_reset_password_min", time_window: 60, max_attempts: 3]
-    when action in [:reset_password]
+       [action_name: "ip_log_in_min", time_window: 300, max_attempts: 20]
+       when action in [:log_in]
+
   plug RedisRateLimiter,
-    [action_name: "ip_reset_password_daily", time_window: 86_400, max_attempts: 20]
-    when action in [:reset_password]
+       [action_name: "ip_log_in_daily", time_window: 86_400, max_attempts: 200]
+       when action in [:log_in]
+
+  plug RedisRateLimiter,
+       [action_name: "ip_forgot_password_min", time_window: 60, max_attempts: 3]
+       when action in [:forgot_password]
+
+  plug RedisRateLimiter,
+       [action_name: "ip_forgot_password_daily", time_window: 86_400, max_attempts: 20]
+       when action in [:forgot_password]
+
+  plug RedisRateLimiter,
+       [action_name: "ip_reset_password_min", time_window: 60, max_attempts: 3]
+       when action in [:reset_password]
+
+  plug RedisRateLimiter,
+       [action_name: "ip_reset_password_daily", time_window: 86_400, max_attempts: 20]
+       when action in [:reset_password]
 
   def register_page(conn, _params) do
     case System.get_setting("enable_register", false) do
       true ->
         conn
         |> render(:register_new, changeset: Accounts.registration_changeset(%UserAccount{}))
+
       false ->
         conn
         |> redirect(to: ~p"/auth/log_in")
@@ -143,7 +149,8 @@ defmodule HakkawineWeb.AuthController do
         |> redirect(to: ~p"/")
 
       {:error, :invalid_credentials} ->
-        changeset = %UserAccount{}
+        changeset =
+          %UserAccount{}
           |> Accounts.login_changeset(user_account_params)
           |> Ecto.Changeset.add_error(:email, "Invalid email or password")
           |> Map.put(:action, :insert)
@@ -165,6 +172,7 @@ defmodule HakkawineWeb.AuthController do
 
   def forgot_password_page(conn, _params) do
     changeset = Accounts.forgot_password_changeset(%UserAccount{})
+
     conn
     |> render(:forgot_password, changeset: changeset)
   end
@@ -173,7 +181,10 @@ defmodule HakkawineWeb.AuthController do
     case Accounts.send_reset_link(user_account_params) do
       res when res in [{:ok, :sent}, {:error, :user_not_exists}] ->
         conn
-        |> put_flash(:info, "If this email address is registered, a reset email has been sent; please check your inbox.")
+        |> put_flash(
+          :info,
+          "If this email address is registered, a reset email has been sent; please check your inbox."
+        )
         |> redirect(to: ~p"/auth/forgot_password")
 
       :deny ->
@@ -197,12 +208,16 @@ defmodule HakkawineWeb.AuthController do
     case Accounts.verify_reset_token(token) do
       {:ok, _email} ->
         changeset = Accounts.change_reset_password(%UserAccount{}, %{"token" => token})
+
         conn
         |> render(:reset_password, changeset: changeset, token: token)
 
       {:error, _reason} ->
         conn
-        |> put_flash(:error, "The password reset link has expired or does not exist; please request a new one.")
+        |> put_flash(
+          :error,
+          "The password reset link has expired or does not exist; please request a new one."
+        )
         |> redirect(to: ~p"/auth/forgot_password")
     end
   end

@@ -9,7 +9,11 @@ defmodule Hakkawine.Accounts.UserAccount do
   @primary_key {:id, :id, autogenerate: true}
   schema "user_accounts" do
     field :account_type, Ecto.Enum, values: @account_types, default: :customer
-    field :status, Ecto.Enum, values: [:unverified, :active, :suspended, :deactivating], default: :unverified
+
+    field :status, Ecto.Enum,
+      values: [:unverified, :active, :suspended, :deactivating],
+      default: :unverified
+
     field :email, :string
     field :password_hash, :string
     field :language, :string, default: "en"
@@ -23,10 +27,11 @@ defmodule Hakkawine.Accounts.UserAccount do
 
     # Virtual field used in forms
     field :password, :string, virtual: true
-    field :verification_code, :string, virtual: :true
+    field :verification_code, :string, virtual: true
     field :captcha_token, :string, virtual: true
     field :token, :string, virtual: true
-    field :phone_number, :string, virtual: true # Honeypot field
+    # Honeypot field
+    field :phone_number, :string, virtual: true
 
     timestamps(
       type: :utc_datetime_usec,
@@ -36,11 +41,29 @@ defmodule Hakkawine.Accounts.UserAccount do
 
   def changeset(user_account, attrs) do
     user_account
-    |> cast(attrs, [:account_type, :status, :email, :password, :email_verified_at, :password_updated_at])
-    |> validate_required([:account_type, :status, :email, :password, :email_verified_at, :password_updated_at])
+    |> cast(attrs, [
+      :account_type,
+      :status,
+      :email,
+      :password,
+      :email_verified_at,
+      :password_updated_at
+    ])
+    |> validate_required([
+      :account_type,
+      :status,
+      :email,
+      :password,
+      :email_verified_at,
+      :password_updated_at
+    ])
     |> normalize_email()
     |> validate_email()
-    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
+    |> validate_length(:password,
+      min: 12,
+      max: 72,
+      message: "must be between 12 and 72 characters long"
+    )
     |> validate_password_complexity()
     |> put_password_hash()
     |> ensure_invite_code()
@@ -54,7 +77,11 @@ defmodule Hakkawine.Accounts.UserAccount do
     |> validate_required([:email, :password])
     |> normalize_email()
     |> validate_email()
-    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
+    |> validate_length(:password,
+      min: 12,
+      max: 72,
+      message: "must be between 12 and 72 characters long"
+    )
     |> validate_password_complexity()
     |> put_password_hash()
     |> ensure_invite_code()
@@ -69,7 +96,11 @@ defmodule Hakkawine.Accounts.UserAccount do
     |> validate_honeypot()
     |> normalize_email()
     |> validate_email()
-    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
+    |> validate_length(:password,
+      min: 12,
+      max: 72,
+      message: "must be between 12 and 72 characters long"
+    )
     |> validate_password_complexity()
     |> put_password_hash()
     |> update_change(:verification_code, &String.trim/1)
@@ -101,7 +132,11 @@ defmodule Hakkawine.Accounts.UserAccount do
     user_account
     |> cast(attrs, [:token, :password])
     |> validate_required([:token, :password])
-    |> validate_length(:password, min: 12, max: 72, message: "must be between 12 and 72 characters long")
+    |> validate_length(:password,
+      min: 12,
+      max: 72,
+      message: "must be between 12 and 72 characters long"
+    )
     |> validate_password_complexity()
     |> put_password_hash()
     |> change(password_updated_at: DateTime.utc_now() |> DateTime.truncate(:second))
@@ -138,22 +173,32 @@ defmodule Hakkawine.Accounts.UserAccount do
       errors = []
 
       errors =
-        if String.match?(password, ~r/[a-z]/), do: errors, else: ["must contain at least one lowercase letter" | errors]
+        if String.match?(password, ~r/[a-z]/),
+          do: errors,
+          else: ["must contain at least one lowercase letter" | errors]
 
       errors =
-        if String.match?(password, ~r/[A-Z]/), do: errors, else: ["must contain at least one uppercase letter" | errors]
+        if String.match?(password, ~r/[A-Z]/),
+          do: errors,
+          else: ["must contain at least one uppercase letter" | errors]
 
       errors =
-        if String.match?(password, ~r/[0-9]/), do: errors, else: ["must contain at least one digit" | errors]
+        if String.match?(password, ~r/[0-9]/),
+          do: errors,
+          else: ["must contain at least one digit" | errors]
 
       errors =
-        if String.match?(password, ~r/[^a-zA-Z0-9]/), do: errors, else: ["must contain at least one special character" | errors]
+        if String.match?(password, ~r/[^a-zA-Z0-9]/),
+          do: errors,
+          else: ["must contain at least one special character" | errors]
 
       Enum.map(errors, fn error_msg -> {:password, error_msg} end)
     end)
   end
 
-  defp put_password_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
+  defp put_password_hash(
+         %Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset
+       ) do
     put_change(changeset, :password_hash, Argon2.hash_pwd_salt(password))
   end
 

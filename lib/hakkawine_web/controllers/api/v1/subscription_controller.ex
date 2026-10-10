@@ -19,7 +19,7 @@ defmodule HakkawineWeb.Api.V1.SubscriptionController do
     target = Subscription.parse_user_agent(user_agent)
 
     with subscription <- Subscription.get_by_uuid(uuid),
-        profile <- Subscription.build_profile(:client, target, subscription),
+         profile <- Subscription.build_profile(:client, target, subscription),
          userinfo <- Subscription.build_userinfo(subscription) do
       conn
       |> put_status(200)

@@ -35,13 +35,18 @@ defmodule Hakkawine.AuditsTest do
       user_audit_log = user_audit_log_fixture()
       update_attrs = %{user_id: 43}
 
-      assert {:ok, %UserAuditLog{} = user_audit_log} = Audits.update_user_audit_log(user_audit_log, update_attrs)
+      assert {:ok, %UserAuditLog{} = user_audit_log} =
+               Audits.update_user_audit_log(user_audit_log, update_attrs)
+
       assert user_audit_log.user_id == 43
     end
 
     test "update_user_audit_log/2 with invalid data returns error changeset" do
       user_audit_log = user_audit_log_fixture()
-      assert {:error, %Ecto.Changeset{}} = Audits.update_user_audit_log(user_audit_log, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Audits.update_user_audit_log(user_audit_log, @invalid_attrs)
+
       assert user_audit_log == Audits.get_user_audit_log!(user_audit_log.id)
     end
 

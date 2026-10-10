@@ -38,7 +38,7 @@ defmodule Hakkawine.Billing.Order do
     field :coupon_code, :string
     field :coupon_snapshot, :map
     field :price_snapshot, :map
-    field :payment_gateway_id, :integer
+    field :payment_method_id, :integer
     field :payment_driver, :string
     field :paid_at, :utc_datetime_usec
     field :note, :string
@@ -75,7 +75,7 @@ defmodule Hakkawine.Billing.Order do
       :coupon_code,
       :coupon_snapshot,
       :price_snapshot,
-      :payment_gateway_id,
+      :payment_method_id,
       :payment_driver,
       :paid_at,
       :note

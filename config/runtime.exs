@@ -33,7 +33,8 @@ defmodule Util do
   def parse_check_origin!(hosts), do: raise("Invalid check_origin option: #{inspect(hosts)}")
 
   def choose_http_binding_address() do
-    port = Util.get_env("PORT", prod: "4000", dev: "4000", test: "4002")
+    port =
+      Util.get_env("PORT", prod: "4000", dev: "4000", test: "4002")
       |> String.to_integer()
 
     defaults = [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: port]
@@ -157,9 +158,7 @@ end
 config :hakkawine, HakkawineWeb.Endpoint,
   http:
     Util.choose_http_binding_address()
-    |> Keyword.merge(
-      http_1_options: [max_header_length: 16384]
-    ),
+    |> Keyword.merge(http_1_options: [max_header_length: 16384]),
   url: [
     host: System.get_env("VIRTUAL_HOST", "localhost"),
     path: System.get_env("URL_PATH", "/"),

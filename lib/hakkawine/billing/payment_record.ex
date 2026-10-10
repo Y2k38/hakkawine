@@ -13,7 +13,8 @@ defmodule Hakkawine.Billing.PaymentRecord do
     field :status, Ecto.Enum, values: [:pending, :paid, :failed, :expired, :refunded]
     field :order_id, :integer
     field :user_id, :integer
-    field :payment_gateway_id, :integer
+    field :payment_method_id, :integer
+    field :payment_account_id, :integer
     field :payment_driver, :string
     field :amount, :decimal
     field :gateway_currency, :string
@@ -27,15 +28,32 @@ defmodule Hakkawine.Billing.PaymentRecord do
     )
   end
 
-  def changeset(payment_gateways, attrs) do
-    payment_gateways
+  def changeset(payment_records, attrs) do
+    payment_records
     |> cast(attrs, [
-      :gateway_trade_no, :status, :order_id, :user_id, :payment_gateway_id,
-      :payment_driver, :amount, :gateway_currency, :gateway_amount, :callback_payload, :paid_at
+      :gateway_trade_no,
+      :status,
+      :order_id,
+      :user_id,
+      :payment_method_id,
+      :payment_account_id,
+      :payment_driver,
+      :amount,
+      :gateway_currency,
+      :gateway_amount,
+      :callback_payload,
+      :paid_at
     ])
     |> validate_required([
-      :status, :order_id, :user_id, :payment_gateway_id, :payment_driver, :amount,
-      :gateway_currency, :gateway_amount
+      :status,
+      :order_id,
+      :user_id,
+      :payment_method_id,
+      :payment_account_id,
+      :payment_driver,
+      :amount,
+      :gateway_currency,
+      :gateway_amount
     ])
     |> put_trade_no()
   end
