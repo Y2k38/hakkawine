@@ -3,16 +3,16 @@ defmodule Hakkawine.StatsTest do
 
   alias Hakkawine.Stats
 
-  describe "node_traffic_logs" do
+  describe "agent_traffic_logs" do
     alias Hakkawine.Stats.TrafficLog
 
     import Hakkawine.StatsFixtures
 
-    @invalid_attrs %{node_id: nil}
+    @invalid_attrs %{agent_id: nil}
 
-    test "list_node_traffic_logs/0 returns all node_traffic_logs" do
+    test "list_agent_traffic_logs/0 returns all agent_traffic_logs" do
       traffic_log = traffic_log_fixture()
-      assert Stats.list_node_traffic_logs() == [traffic_log]
+      assert Stats.list_agent_traffic_logs() == [traffic_log]
     end
 
     test "get_traffic_log!/1 returns the traffic_log with given id" do
@@ -21,10 +21,10 @@ defmodule Hakkawine.StatsTest do
     end
 
     test "create_traffic_log/1 with valid data creates a traffic_log" do
-      valid_attrs = %{node_id: 42}
+      valid_attrs = %{agent_id: 42}
 
       assert {:ok, %TrafficLog{} = traffic_log} = Stats.create_traffic_log(valid_attrs)
-      assert traffic_log.node_id == 42
+      assert traffic_log.agent_id == 42
     end
 
     test "create_traffic_log/1 with invalid data returns error changeset" do
@@ -33,12 +33,12 @@ defmodule Hakkawine.StatsTest do
 
     test "update_traffic_log/2 with valid data updates the traffic_log" do
       traffic_log = traffic_log_fixture()
-      update_attrs = %{node_id: 43}
+      update_attrs = %{agent_id: 43}
 
       assert {:ok, %TrafficLog{} = traffic_log} =
                Stats.update_traffic_log(traffic_log, update_attrs)
 
-      assert traffic_log.node_id == 43
+      assert traffic_log.agent_id == 43
     end
 
     test "update_traffic_log/2 with invalid data returns error changeset" do

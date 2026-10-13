@@ -1,4 +1,4 @@
-defmodule Hakkawine.Infra.NodeTelemetry do
+defmodule Hakkawine.Agents.AgentTelemetry do
   use Ecto.Schema
 
   import Ecto.Changeset

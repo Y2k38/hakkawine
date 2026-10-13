@@ -1,12 +1,13 @@
-defmodule Hakkawine.Infra.Node do
+defmodule Hakkawine.Agents.Agent do
   use Ecto.Schema
 
   import Ecto.Changeset
 
   @primary_key {:id, :id, autogenerate: true}
-  schema "nodes" do
+  schema "agents" do
     field :name, :string
-    field :secret_hash, :string
+    field :client_id, :string
+    field :client_secret_hash, :string
     field :status, Ecto.Enum, values: [:pending, :active, :offline, :disabled]
     field :address, :string
     field :protocol, :string
@@ -26,9 +27,26 @@ defmodule Hakkawine.Infra.Node do
     )
   end
 
+  def generate_client_id do
+    random_part =
+      :crypto.strong_rand_bytes(9)
+      |> Base.url_encode64(padding: false)
+      |> String.replace(~r/[-_]/, "")
+
+    "agent_" <> String.downcase(random_part)
+  end
+
+  def generate_client_secret do
+    random_bytes = :crypto.strong_rand_bytes(32)
+
+    secret_body = Base.url_encode64(random_bytes, padding: false)
+
+    "sec_" <> secret_body
+  end
+
   @doc false
-  def changeset(node, attrs) do
-    node
+  def changeset(agent, attrs) do
+    agent
     |> cast(attrs, [:name])
     |> validate_required([:name])
   end

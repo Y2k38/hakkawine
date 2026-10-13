@@ -55,5 +55,10 @@ defmodule HakkawineWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+
+  socket "/agent/v1/stream", HakkawineWeb.Agent.V1.AgentSocket,
+    websocket: [connect_info: [:peer_data]],
+    longpoll: false
+
   plug HakkawineWeb.Router
 end

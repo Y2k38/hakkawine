@@ -1,7 +1,7 @@
 defmodule HakkawineWeb.OrderController do
   use HakkawineWeb, :controller
 
-  alias Hakkawine.Checkout
+  alias Hakkawine.Billing
 
   def create(conn, params) do
     fallback_url = Map.get(params, "fallback_url", ~p"/")
@@ -9,7 +9,7 @@ defmodule HakkawineWeb.OrderController do
 
     user = conn.assigns.current_user
 
-    case Checkout.create_order(user, params) do
+    case Billing.create_order(user, params) do
       {:ok, _order} ->
         conn
         |> put_flash(:info, "Order created successfully!")

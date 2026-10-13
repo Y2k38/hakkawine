@@ -1,10 +1,10 @@
-defmodule Hakkawine.Stats.NodeTrafficLogs5m do
+defmodule Hakkawine.Stats.AgentTrafficLogs5m do
   use Ecto.Schema
 
   @primary_key false
-  schema "node_traffic_logs_5m" do
+  schema "agent_traffic_logs_5m" do
     field :bucket_5m, :utc_datetime
-    field :node_id, :integer
+    field :agent_id, :integer
     field :user_id, :integer
     field :subscription_id, :integer
     field :upload_bytes, :integer

@@ -16,8 +16,4 @@ defmodule HakkawineWeb.PlanHTML do
   end
 
   def get_reset_price(_), do: nil
-
-  def format_speed(nil), do: "Unlimited"
-  def format_speed(0), do: "Unlimited"
-  def format_speed(mbps), do: "#{mbps} Mbps"
 end

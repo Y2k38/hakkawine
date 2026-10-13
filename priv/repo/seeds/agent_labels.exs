@@ -1,5 +1,5 @@
 alias Hakkawine.DatabaseSeeder
-alias Hakkawine.System.NodeLabel
+alias Hakkawine.System.AgentLabel
 
 labels = [
   %{category: "country", key: "hk", name: "Hong Kong"},
@@ -39,7 +39,7 @@ labels = [
 ]
 
 DatabaseSeeder.seed(
-  NodeLabel,
+  AgentLabel,
   [:category, :key],
   labels,
   update_fields: [:name]

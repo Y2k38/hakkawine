@@ -1,16 +1,16 @@
 defmodule HakkawineWeb.CheckoutController do
   use HakkawineWeb, :controller
 
+  alias Hakkawine.Repo
   alias Hakkawine.Catalog
 
   def new_sub(conn, params) do
     case params do
       %{"code" => code} when is_binary(code) and code != "" ->
-        plan = Catalog.get_product_by_plan_code(code)
+        plan = Catalog.get_plan_by_code(code) |> Repo.preload(:prices)
 
         render(conn, :new_sub,
           plan: plan,
-          brand_name: "Hakkawine",
           user_balance: 0,
           idempotency_key: Ecto.UUID.generate()
         )

@@ -113,9 +113,7 @@ defmodule HakkawineWeb.Layouts do
         class="dropdown-content z-[50] mt-2 !top-full !left-1/2 !-translate-x-1/2"
       >
         <div class="card relative flex flex-col items-center border border-base-300 bg-base-300 rounded-full w-10 p-1 shadow-xl">
-          <div
-            class="absolute w-8 h-8 rounded-full border border-base-200 bg-base-100 brightness-150 top-1 transition-[top] duration-200 ease-out [[data-theme=light]_&]:top-[36px] [[data-theme=dark]_&]:top-[68px] [[data-theme-source=system]_&]:!top-1 shadow-inner z-0"
-          />
+          <div class="absolute w-8 h-8 rounded-full border border-base-200 bg-base-100 brightness-150 top-1 transition-[top] duration-200 ease-out [[data-theme=light]_&]:top-[36px] [[data-theme=dark]_&]:top-[68px] [[data-theme-source=system]_&]:!top-1 shadow-inner z-0" />
 
           <button
             class="relative flex items-center justify-center w-8 h-8 cursor-pointer z-10"

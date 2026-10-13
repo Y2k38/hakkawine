@@ -1,5 +1,5 @@
 alias Hakkawine.DatabaseSeeder
-alias Hakkawine.Infra.OBFSDomain
+alias Hakkawine.Agents.OBFSDomain
 
 domains = [
   %{domain: "microsoft.com", is_blocked: false},

@@ -1,10 +1,10 @@
-defmodule Hakkawine.System.NodeLabel do
+defmodule Hakkawine.System.AgentLabel do
   use Ecto.Schema
 
   import Ecto.Changeset
 
   @primary_key {:id, :id, autogenerate: true}
-  schema "node_labels" do
+  schema "agent_labels" do
     field :category, :string
     field :key, :string
     field :name, :string
@@ -17,8 +17,8 @@ defmodule Hakkawine.System.NodeLabel do
   end
 
   @doc false
-  def changeset(node_label, attrs) do
-    node_label
+  def changeset(agent_label, attrs) do
+    agent_label
     |> cast(attrs, [:category, :key, :name, :is_enabled])
     |> validate_required([:category, :key, :name, :is_enabled])
     |> validate_length(:category,

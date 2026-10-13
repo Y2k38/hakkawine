@@ -3,12 +3,10 @@ defmodule Hakkawine.Billing.PaymentMethod do
 
   import Ecto.Changeset
 
-  alias Hakkawine.Repo.Types.JSONValue
-
   @primary_key {:id, :id, autogenerate: true}
   schema "payment_methods" do
     field :code, :string
-    field :payment_driver, :string
+    field :driver, :string
     field :name, :string
     field :description, :string
     field :icon_url, :string
@@ -31,7 +29,7 @@ defmodule Hakkawine.Billing.PaymentMethod do
     payment_method
     |> cast(attrs, [
       :code,
-      :payment_driver,
+      :driver,
       :name,
       :icon_url,
       :min_tx_amount,

@@ -14,6 +14,7 @@ defmodule Hakkawine.Catalog.Product do
     field :type, Ecto.Enum, values: [:plan, :addon]
     field :status, Ecto.Enum, values: [:draft, :active, :archived]
     field :charge_type, Ecto.Enum, values: [:recurring, :one_time]
+    field :tier_rank, :integer
     field :is_recommended, :boolean, default: false
     field :sort_order, :integer, default: 0
     field :traffic_quota_bytes, :integer
@@ -42,6 +43,7 @@ defmodule Hakkawine.Catalog.Product do
       :type,
       :status,
       :charge_type,
+      :tier_rank,
       :is_recommended,
       :sort_order,
       :traffic_quota_bytes,
@@ -56,6 +58,7 @@ defmodule Hakkawine.Catalog.Product do
       :type,
       :status,
       :charge_type,
+      :tier_rank,
       :is_recommended,
       :sort_order
     ])

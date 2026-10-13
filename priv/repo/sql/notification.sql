@@ -31,7 +31,7 @@
 -- System-wide announcements; bypasses message_templates, inserted directly into user_notifications
 -- ------------------------------------------------------------------------------
 -- sys_maintenance         : Scheduled system or node maintenance announcement
--- sys_node_down           : Unscheduled node outage alert
+-- sys_agent_down           : Unscheduled agent outage alert
 -- sys_activity_promo      : Promotional campaign or holiday deal announcement
 -- sys_terms_updated       : Terms of service or privacy policy update notification
 CREATE TYPE message_type AS ENUM('auth', 'business', 'ticket', 'broadcast');

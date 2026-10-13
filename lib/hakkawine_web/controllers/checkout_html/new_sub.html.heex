@@ -70,9 +70,6 @@ base_monthly_price = if monthly_price_item, do: to_float.(monthly_price_item.amo
   <!-- Header -->
   <div class="mb-6">
     <div class="flex items-center gap-3">
-      <span class="text-2xl font-black tracking-wider text-base-content">
-        {@brand_name || "LOGO"}
-      </span>
       <span class="text-xl font-bold text-base-content/80">Purchase Plan</span>
     </div>
     <p class="text-xs text-base-content/50 mt-1">
@@ -138,7 +135,7 @@ base_monthly_price = if monthly_price_item, do: to_float.(monthly_price_item.amo
 
               <label class={card_class}>
                 <!-- Top-Right Discount Badge -->
-                <% if savings_percent > 0 do %>
+                <%= if savings_percent > 0 do %>
                   <span class="absolute -top-2 -right-2 badge badge-success badge-xs font-bold text-[10px] px-2 py-1.5 shadow-sm">
                     Save {savings_percent}%
                   </span>
@@ -163,7 +160,7 @@ base_monthly_price = if monthly_price_item, do: to_float.(monthly_price_item.amo
                   <div class="text-base font-black text-base-content">
                     {currency_symbol()}{format_amount(price.amount)}
                   </div>
-                  <% if m_count > 1 do %>
+                  <%= if m_count > 1 do %>
                     <div class="text-[11px] text-base-content/50 mt-0.5">
                       ≈ {currency_symbol()}{:erlang.float_to_binary(avg_monthly, decimals: 2)}/mo
                     </div>
@@ -330,10 +327,6 @@ base_monthly_price = if monthly_price_item, do: to_float.(monthly_price_item.amo
             class="btn btn-warning btn-block rounded-2xl text-base"
           >
             Confirm Order
-          </button>
-
-          <button type="button" class="btn btn-ghost btn-block rounded-2xl text-base-content/70">
-            Cancel
           </button>
 
           <!-- Promo Code Input -->

@@ -47,7 +47,7 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
     create table(:payment_methods, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :code, :string, size: 32, null: false
-      add :payment_driver, :string, size: 32, null: false
+      add :driver, :string, size: 32, null: false
       add :name, :string, size: 64, null: false
       add :description, :string, size: 255, null: false
       add :icon_url, :string, size: 255, null: false

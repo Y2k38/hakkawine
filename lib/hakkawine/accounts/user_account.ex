@@ -32,6 +32,8 @@ defmodule Hakkawine.Accounts.UserAccount do
     field :token, :string, virtual: true
     # Honeypot field
     field :phone_number, :string, virtual: true
+    # invited_by
+    field :aff, :string, virtual: true
 
     timestamps(
       type: :utc_datetime_usec,
@@ -45,6 +47,7 @@ defmodule Hakkawine.Accounts.UserAccount do
       :account_type,
       :status,
       :email,
+      :aff,
       :password,
       :email_verified_at,
       :password_updated_at

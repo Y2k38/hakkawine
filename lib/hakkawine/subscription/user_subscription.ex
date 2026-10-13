@@ -1,12 +1,11 @@
 defmodule Hakkawine.Subscription.UserSubscription do
   use Ecto.Schema
 
-  import Ecto.Query
   import Ecto.Changeset
 
   alias Hakkawine.Catalog.Product
   alias Hakkawine.Billing.Order
-  alias Hakkawine.Infra.NodeLease
+  alias Hakkawine.Agents.AgentAllocation
 
   @primary_key {:id, :id, autogenerate: true}
   schema "user_subscriptions" do
@@ -27,7 +26,7 @@ defmodule Hakkawine.Subscription.UserSubscription do
 
     belongs_to :product, Product, foreign_key: :product_id
 
-    has_many :node_leases, NodeLease, foreign_key: :subscription_id
+    has_many :agent_allocations, AgentAllocation, foreign_key: :subscription_id
 
     timestamps(
       type: :utc_datetime_usec,

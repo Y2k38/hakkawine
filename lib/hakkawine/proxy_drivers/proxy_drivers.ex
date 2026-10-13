@@ -7,11 +7,11 @@ defmodule Hakkawine.ProxyDrivers do
   def build_proxies(scope, target, subscription) do
     plan_slots = Map.new(subscription.product.plan_slots, fn slot -> {slot.id, slot} end)
 
-    Enum.map(subscription.node_leases, fn node_lease ->
-      plan_slot = Map.get(plan_slots, node_lease.plan_slot_id)
+    Enum.map(subscription.agent_allocations, fn agent_allocation ->
+      plan_slot = Map.get(plan_slots, agent_allocation.plan_slot_id)
       slot_name = plan_slot && plan_slot.slot_name
 
-      config = %{node_lease.proxy_config | name: slot_name}
+      config = %{agent_allocation.proxy_config | name: slot_name}
 
       build_single_proxy(scope, target, config)
     end)

@@ -32,8 +32,8 @@ defmodule Hakkawine.Billing.Workers.CreateSubscription do
     end
   end
 
-  defp process_subscription(%Order{status: status}, _user) do
-    # Logger.info("Skip CreateSubscription for order in status: #{status}")
-    :ok
-  end
+  # defp process_subscription(%Order{status: status}, _user) do
+  #   # Logger.info("Skip CreateSubscription for order in status: #{status}")
+  #   :ok
+  # end
 end

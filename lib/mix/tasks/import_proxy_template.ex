@@ -27,8 +27,6 @@ defmodule Mix.Tasks.ImportProxyTemplate do
         ]
       )
 
-    IO.inspect(opts, label: ">>> opts")
-
     unless opts[:name] && opts[:code] && opts[:scope] && opts[:target] && opts[:file_path] do
       Mix.raise("""
       Error: Missing required parameters!

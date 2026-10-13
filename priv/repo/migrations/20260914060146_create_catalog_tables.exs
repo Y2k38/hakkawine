@@ -14,6 +14,7 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
       add :type, :product_type, null: false, default: "plan"
       add :status, :product_status, null: false, default: "draft"
       add :charge_type, :charge_type, null: false, default: "recurring"
+      add :tier_rank, :integer, null: false
       add :is_recommended, :boolean, null: false, default: false
       add :sort_order, :integer, null: false, default: 0
       add :traffic_quota_bytes, :bigint

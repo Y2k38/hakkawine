@@ -11,7 +11,7 @@ defmodule Hakkawine.StatsFixtures do
     {:ok, traffic_log} =
       attrs
       |> Enum.into(%{
-        node_id: 42
+        agent_id: 42
       })
       |> Hakkawine.Stats.create_traffic_log()
 

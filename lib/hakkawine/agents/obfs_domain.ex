@@ -1,4 +1,4 @@
-defmodule Hakkawine.Infra.OBFSDomain do
+defmodule Hakkawine.Agents.OBFSDomain do
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -15,8 +15,8 @@ defmodule Hakkawine.Infra.OBFSDomain do
   end
 
   @doc false
-  def changeset(node, attrs) do
-    node
+  def changeset(domain, attrs) do
+    domain
     |> cast(attrs, [:domain, :is_blocked])
     |> validate_required([:domain, :is_blocked])
     |> validate_length(:domain,

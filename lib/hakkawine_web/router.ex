@@ -91,13 +91,7 @@ defmodule HakkawineWeb.Router do
 
     post "/payments/notify/:driver", PaymentsController, :notify
 
-    get "/sub/:uuid", SubscriptionController, :index
-  end
-
-  scope "/agent/v1", HakkawineWeb.Agent.V1 do
-    pipe_through :api
-
-    post "/stream", StreamController, :index
+    get "/sub/:sub_id/:sub_uuid", SubscriptionController, :index
   end
 
   if Application.compile_env(:hakkawine, :dev_routes) do

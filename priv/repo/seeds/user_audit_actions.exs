@@ -29,9 +29,9 @@ actions_data = [
   %{code: "admin_balance_adjust",   domain: "admin", category: "financial", description: "Admin manually adjusted user balance"},
   %{code: "admin_order_mark_paid",  domain: "admin", category: "financial", description: "Admin manually marked order as paid"},
   %{code: "admin_order_cancel",     domain: "admin", category: "financial", description: "Admin forcibly cancelled an order"},
-  %{code: "admin_node_create",      domain: "admin", category: "system",    description: "Admin created a new proxy node"},
-  %{code: "admin_node_update",      domain: "admin", category: "system",    description: "Admin updated proxy node settings"},
-  %{code: "admin_node_delete",      domain: "admin", category: "system",    description: "Admin deleted a proxy node"},
+  %{code: "admin_agent_create",      domain: "admin", category: "system",    description: "Admin created a new agent"},
+  %{code: "admin_agent_update",      domain: "admin", category: "system",    description: "Admin updated agent settings"},
+  %{code: "admin_agent_delete",      domain: "admin", category: "system",    description: "Admin deleted a agent"},
   %{code: "admin_config_update",    domain: "admin", category: "system",    description: "Admin updated global system settings"}
 ]
 

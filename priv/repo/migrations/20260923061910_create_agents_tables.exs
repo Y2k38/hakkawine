@@ -1,4 +1,4 @@
-defmodule Hakkawine.Repo.Migrations.CreateInfraTables do
+defmodule Hakkawine.Repo.Migrations.CreateAgentsTables do
   use Ecto.Migration
 
   def up do
@@ -16,13 +16,14 @@ defmodule Hakkawine.Repo.Migrations.CreateInfraTables do
 
     create unique_index(:obfs_domains, [:domain], name: :uk_obfs_domains_domain)
 
-    execute "CREATE TYPE node_status AS ENUM('pending', 'active', 'offline', 'disabled');"
+    execute "CREATE TYPE agent_status AS ENUM('pending', 'active', 'offline', 'disabled');"
 
-    create table(:nodes, primary_key: false) do
+    create table(:agents, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :name, :string, size: 32, null: false
-      add :secret_hash, :string, size: 255, null: false
-      add :status, :node_status, null: false, default: "pending"
+      add :client_id, :string, size: 64, null: false
+      add :client_secret_hash, :string, size: 255, null: false
+      add :status, :agent_status, null: false, default: "pending"
       add :address, :string, size: 255, null: false
       add :protocol, :string, size: 16, null: false
       add :port_base, :integer, null: false
@@ -42,15 +43,15 @@ defmodule Hakkawine.Repo.Migrations.CreateInfraTables do
       )
     end
 
-    create unique_index(:nodes, [:name], name: :uk_nodes_name)
+    create unique_index(:agents, [:client_id], name: :uk_agents_client_id)
 
-    create index(:nodes, [:status], name: :idx_nodes_status)
+    create index(:agents, [:status], name: :idx_agents_status)
 
-    create index(:nodes, [:labels], using: :gin, name: :idx_nodes_labels)
+    create index(:agents, [:labels], using: :gin, name: :idx_agents_labels)
 
-    create table(:node_leases, primary_key: false) do
+    create table(:agent_allocations, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
-      add :node_id, :bigint, null: false
+      add :agent_id, :bigint, null: false
       add :subscription_id, :bigint, null: false
       add :plan_slot_id, :bigint, null: false
       add :port, :integer, null: false
@@ -64,28 +65,28 @@ defmodule Hakkawine.Repo.Migrations.CreateInfraTables do
       )
     end
 
-    create unique_index(:node_leases, [:subscription_id, :plan_slot_id],
-             name: :uk_node_leases_sub_slot
+    create unique_index(:agent_allocations, [:subscription_id, :plan_slot_id],
+             name: :uk_agent_allocations_sub_slot
            )
 
-    create index(:node_leases, [:node_id],
-             name: :idx_node_leases_node_id,
+    create index(:agent_allocations, [:agent_id],
+             name: :idx_agent_allocations_agent_id,
              where: "is_active = TRUE"
            )
   end
 
   def down do
-    drop_if_exists index(:node_leases, name: :idx_node_leases_node_id)
-    drop_if_exists index(:node_leases, name: :uk_node_leases_sub_slot)
-    drop_if_exists index(:nodes, name: :idx_nodes_labels)
-    drop_if_exists index(:nodes, name: :idx_nodes_status)
-    drop_if_exists index(:nodes, name: :uk_nodes_name)
+    drop_if_exists index(:agent_allocations, name: :idx_agent_allocations_agent_id)
+    drop_if_exists index(:agent_allocations, name: :uk_agent_allocations_sub_slot)
+    drop_if_exists index(:agents, name: :idx_agents_labels)
+    drop_if_exists index(:agents, name: :idx_agents_status)
+    drop_if_exists index(:agents, name: :uk_agents_client_id)
     drop_if_exists index(:obfs_domains, name: :uk_obfs_domains_domain)
 
-    drop_if_exists table(:node_leases)
-    drop_if_exists table(:nodes)
+    drop_if_exists table(:agent_allocations)
+    drop_if_exists table(:agents)
     drop_if_exists table(:obfs_domains)
 
-    execute "DROP TYPE IF EXISTS node_status;"
+    execute "DROP TYPE IF EXISTS agent_status;"
   end
 end

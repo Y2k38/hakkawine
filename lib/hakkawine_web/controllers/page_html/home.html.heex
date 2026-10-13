@@ -2,53 +2,63 @@
 
 <div class="space-y-6">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
     <div class="lg:col-span-2 space-y-6">
-      
       <div class="card bg-base-100 shadow-sm border border-base-300">
         <div class="card-body">
           <div class="flex items-center justify-between mb-2">
             <h2 class="card-title text-base font-bold">My Services</h2>
             <div class="flex gap-2">
-              <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">All Services</button>
-              <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Go to Shop</button>
+              <a href={~p"/services"} class="btn btn-sm btn-ghost bg-base-200/60 font-normal">All Services</a>
+              <a href={~p"/plans"} class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Go to Shop</a>
             </div>
           </div>
 
-          <div class="bg-base-200/40 rounded-2xl p-5 border border-base-300/60 space-y-4">
+          <.link
+            :for={subscription <- @subscriptions}
+            href={~p"/services/#{subscription.id}"}
+            class="card bg-base-200/40 shadow-sm border border-base-300 rounded-2xl p-5 block hover:border-warning hover:shadow-md transition-all cursor-pointer space-y-4"
+          >
             <div class="flex items-center justify-between">
-              <span class="font-bold text-lg">Bronze</span>
+              <span class="font-bold text-lg">{subscription.product.name}</span>
               <span class="badge badge-success text-success-content font-medium text-xs px-2.5 py-1">Active</span>
             </div>
+
+            <% item = Map.get(@billing_summaries, subscription.id) %>
 
             <div class="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <div class="text-base-content/60 text-xs mb-1">Plan Traffic</div>
-                <div class="font-semibold text-base">150.00 GiB</div>
+                <div class="font-semibold text-base">{format_traffic(item.total)}</div>
               </div>
               <div>
                 <div class="text-base-content/60 text-xs mb-1">Used Traffic</div>
-                <div class="font-semibold text-base">19.35 GiB</div>
+                <div class="font-semibold text-base">{format_traffic(item.used)}</div>
               </div>
               <div>
                 <div class="text-base-content/60 text-xs mb-1">Remaining Traffic</div>
-                <div class="font-semibold text-base">130.65 GiB</div>
+                <div class="font-semibold text-base">
+                  {format_traffic(item.remaining)}
+                </div>
               </div>
             </div>
 
             <div class="space-y-1">
               <div class="flex justify-between text-xs text-base-content/70">
-                <span>Used 13%</span>
-                <span>87% Remaining</span>
+                <span>Used {item.percent}%</span>
+                <span>{100 - item.percent}% Remaining</span>
               </div>
-              <progress class="progress progress-success w-full h-2" value="13" max="100"></progress>
+              <progress
+                class="progress progress-success w-full h-2"
+                value={item.percent}
+                max="100"
+              ></progress>
             </div>
 
             <div class="flex flex-wrap justify-between text-xs text-base-content/60 pt-2 border-t border-base-300/40">
-              <span>Expiration: 2026/11/17</span>
-              <span>Next Reset: 2026/10/17</span>
+              <span>Expiration: {Calendar.strftime(subscription.expired_at, "%Y/%m/%d")}</span>
+              <span>Next Reset: {Calendar.strftime(item.cycle_end, "%Y/%m/%d")}</span>
             </div>
-          </div>
+          </.link>
         </div>
       </div>
 
@@ -58,8 +68,10 @@
           <p class="text-xs text-base-content/60 mb-3">Quick access to frequent features</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            
-            <a href={~p"/knowledge"} class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40">
+            <a
+              href={~p"/knowledges"}
+              class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40"
+            >
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center font-bold">
                   📚
@@ -72,7 +84,10 @@
               <span class="text-base-content/40">→</span>
             </a>
 
-            <a href={~p"/plan/list"} class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40">
+            <a
+              href={~p"/plans"}
+              class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40"
+            >
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center font-bold">
                   🛒
@@ -85,7 +100,10 @@
               <span class="text-base-content/40">→</span>
             </a>
 
-            <a href={~p"/home"} class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40">
+            <a
+              href={~p"/account"}
+              class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40"
+            >
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center font-bold">
                   💳
@@ -98,7 +116,10 @@
               <span class="text-base-content/40">→</span>
             </a>
 
-            <a href={~p"/tickets"} class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40">
+            <a
+              href={~p"/tickets"}
+              class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40"
+            >
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-warning/10 text-warning flex items-center justify-center font-bold">
                   🎫
@@ -110,15 +131,12 @@
               </div>
               <span class="text-base-content/40">→</span>
             </a>
-
           </div>
         </div>
       </div>
-
     </div>
 
     <div class="space-y-6">
-      
       <div class="card bg-base-100 shadow-sm border border-base-300">
         <div class="card-body">
           <h2 class="card-title text-base font-bold mb-3">Account Overview</h2>
@@ -126,28 +144,32 @@
           <div class="grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
             <div>
               <div class="text-base-content/60 text-xs mb-1">Balance</div>
-              <div class="text-lg font-bold text-warning">¥22.61</div>
-              <a href="#" class="text-xs text-warning hover:underline">Top-up</a>
+              <div class="text-lg font-bold">
+                {currency_symbol()}{format_amount(@user_balance)}
+              </div>
+              <a href={~p"/account"} class="text-xs text-warning hover:underline">Top-up</a>
             </div>
 
             <div>
               <div class="text-base-content/60 text-xs mb-1">Active Services</div>
-              <div class="text-lg font-bold">1</div>
-              <a href="#" class="text-xs text-base-content/60 hover:underline">Manage</a>
+              <div class="text-lg font-bold">{length(@subscriptions)}</div>
+              <a href={~p"/services"} class="text-xs text-warning hover:underline">Manage</a>
             </div>
 
             <div class="divider col-span-2 my-0"></div>
 
             <div>
               <div class="text-base-content/60 text-xs mb-1">Total Traffic</div>
-              <div class="font-bold text-base">130.65 GiB</div>
+              <div class="font-bold text-base">{format_traffic(@total_remaining)}</div>
               <div class="text-xs text-base-content/50">Sum of active services</div>
             </div>
 
             <div>
               <div class="text-base-content/60 text-xs mb-1">AFF Commission</div>
-              <div class="font-bold text-base">¥0.00</div>
-              <a href={~p"/affiliate"} class="text-xs text-warning hover:underline">Affiliate Center →</a>
+              <div class="font-bold text-base">
+                {currency_symbol()}{format_amount(@commission_balance)}
+              </div>
+              <a href={~p"/affiliate"} class="text-xs hover:underline">Affiliate Center →</a>
             </div>
           </div>
         </div>
@@ -172,12 +194,10 @@
 
           <div class="mt-2 pt-3 border-t border-base-300/40 text-xs">
             <span class="text-base-content/60">Having trouble?</span>
-            <a href={~p"/knowledge"} class="text-warning font-medium hover:underline ml-1">Help Center →</a>
+            <a href={~p"/knowledges"} class="text-warning font-medium hover:underline ml-1">Help Center →</a>
           </div>
         </div>
       </div>
-
     </div>
-
   </div>
 </div>

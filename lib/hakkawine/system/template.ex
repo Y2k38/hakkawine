@@ -21,8 +21,8 @@ defmodule Hakkawine.System.Template do
   end
 
   @doc false
-  def changeset(node_label, attrs) do
-    node_label
+  def changeset(template, attrs) do
+    template
     |> cast(attrs, [:name, :type, :file_ext, :match_rules, :content])
     |> validate_required([:name, :type, :file_ext, :match_rules, :content])
     |> validate_length(:name,

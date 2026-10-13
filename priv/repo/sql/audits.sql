@@ -31,9 +31,9 @@ VALUES
     ('admin_balance_adjust', 'admin', 'financial', 'Admin manually adjusted user balance'),
     ('admin_order_mark_paid', 'admin', 'financial', 'Admin manually marked order as paid'),
     ('admin_order_cancel', 'admin', 'financial', 'Admin forcibly cancelled an order'),
-    ('admin_node_create', 'admin', 'system', 'Admin created a new proxy node'),
-    ('admin_node_update', 'admin', 'system', 'Admin updated proxy node settings'),
-    ('admin_node_delete', 'admin', 'system', 'Admin deleted a proxy node'),
+    ('admin_agent_create', 'admin', 'system', 'Admin created a new agent'),
+    ('admin_agent_update', 'admin', 'system', 'Admin updated agent settings'),
+    ('admin_agent_delete', 'admin', 'system', 'Admin deleted a agent'),
     ('admin_config_update', 'admin', 'system', 'Admin updated global system settings');
 
 CREATE TABLE user_audit_logs (

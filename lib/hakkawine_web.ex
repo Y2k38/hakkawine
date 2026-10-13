@@ -74,6 +74,8 @@ defmodule HakkawineWeb do
 
       # Include general helpers for rendering HTML
       unquote(html_helpers())
+
+      import Hakkawine.System, only: [get_setting: 1, get_setting: 2]
     end
   end
 
