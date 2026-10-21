@@ -1,6 +1,7 @@
 defmodule HakkawineWeb.PageController do
   use HakkawineWeb, :controller
 
+  alias Hakkawine.Marketing
   alias Hakkawine.Billing
   alias Hakkawine.Repo
   alias Hakkawine.Subscription
@@ -16,10 +17,10 @@ defmodule HakkawineWeb.PageController do
   def home(conn, _params) do
     user = conn.assigns[:current_user]
 
-    subscriptions = Subscription.list_active_subscriptions(user.id) |> Repo.preload(:product)
+    subs = Subscription.list_active_subscriptions(user.id) |> Repo.preload(:product)
 
     billing_summaries =
-      Map.new(subscriptions, fn sub ->
+      Map.new(subs, fn sub ->
         {sub.id, Subscription.billing_summary(sub)}
       end)
 
@@ -27,12 +28,17 @@ defmodule HakkawineWeb.PageController do
 
     user_balance = Billing.get_user_balance(user.id)
 
+    checkin_today = Marketing.get_today_user_checkin(user.id)
+    checkin_today_count = Marketing.count_today_checkins()
+
     render(conn, :home,
-      subscriptions: subscriptions,
+      subs: subs,
       billing_summaries: billing_summaries,
       total_remaining: total_remaining,
       user_balance: user_balance,
-      commission_balance: 0
+      commission_balance: 0,
+      checkin_today: checkin_today,
+      checkin_today_count: checkin_today_count
     )
   end
 end

@@ -13,15 +13,15 @@ defmodule HakkawineWeb.PlanController do
     recurring_plans = Enum.filter(plans, &(&1.charge_type == :recurring))
     one_time_plans = Enum.filter(plans, &(&1.charge_type == :one_time))
 
-    subscription =
-      Subscription.get_recurring_subscription_by_user_id(user.id) |> Repo.preload(:product)
+    current_sub =
+      Subscription.get_active_recurring_subscription(user.id) |> Repo.preload(:product)
 
     conn
     |> render(
       :index,
       recurring_plans: recurring_plans,
       one_time_plans: one_time_plans,
-      subscription: subscription
+      current_sub: current_sub
     )
   end
 end

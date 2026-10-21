@@ -4,10 +4,10 @@ defmodule Hakkawine.ProxyDrivers do
   alias Hakkawine.ProxyDrivers.AnyTLS
   alias Hakkawine.ProxyDrivers.Hysteria2
 
-  def build_proxies(scope, target, subscription) do
-    plan_slots = Map.new(subscription.product.plan_slots, fn slot -> {slot.id, slot} end)
+  def build_proxies(scope, target, sub) do
+    plan_slots = Map.new(sub.product.plan_slots, fn slot -> {slot.id, slot} end)
 
-    Enum.map(subscription.agent_allocations, fn agent_allocation ->
+    Enum.map(sub.agent_allocations, fn agent_allocation ->
       plan_slot = Map.get(plan_slots, agent_allocation.plan_slot_id)
       slot_name = plan_slot && plan_slot.slot_name
 

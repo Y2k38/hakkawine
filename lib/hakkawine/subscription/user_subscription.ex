@@ -46,4 +46,11 @@ defmodule Hakkawine.Subscription.UserSubscription do
   end
 
   defp put_uuid(changeset), do: changeset
+
+  def extra_traffic_changeset(user_subscription, attrs \\ %{}) do
+    user_subscription
+    |> cast(attrs, [:extra_quota_bytes])
+    |> validate_required([:extra_quota_bytes])
+    |> validate_number(:extra_quota_bytes, greater_than_or_equal_to: 0)
+  end
 end

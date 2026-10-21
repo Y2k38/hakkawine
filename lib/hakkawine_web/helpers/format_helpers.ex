@@ -1,4 +1,4 @@
-defmodule HakkawineWeb.FormatHelpers do
+defmodule HakkawineWeb.FormatHelper do
   alias Hakkawine.System
 
   def currency_symbol do
@@ -30,18 +30,36 @@ defmodule HakkawineWeb.FormatHelpers do
     end
   end
 
-  def format_traffic(bytes, precision \\ 2) when is_integer(bytes) and bytes > 0 do
-    gb = bytes / (1024 * 1024 * 1024)
+  def format_traffic(bytes, precision \\ 2)
 
-    if gb >= 1024 do
-      tb = gb / 1024
-      "#{:erlang.float_to_binary(tb, decimals: precision)} TB"
-    else
-      "#{:erlang.float_to_binary(gb, decimals: precision)} GB"
+  def format_traffic(bytes, precision) when is_integer(bytes) and bytes > 0 do
+    cond do
+      # 1024^4 (TB)
+      bytes >= 1_099_511_627_776 ->
+        tb = bytes / 1_099_511_627_776
+        "#{:erlang.float_to_binary(tb, decimals: precision)} TB"
+
+      # 1024^3 (GB)
+      bytes >= 1_073_741_824 ->
+        gb = bytes / 1_073_741_824
+        "#{:erlang.float_to_binary(gb, decimals: precision)} GB"
+
+      # 1024^2 (MB)
+      bytes >= 1_048_576 ->
+        mb = bytes / 1_048_576
+        "#{:erlang.float_to_binary(mb, decimals: precision)} MB"
+
+      # 1024^1 (KB)
+      bytes >= 1024 ->
+        kb = bytes / 1024
+        "#{:erlang.float_to_binary(kb, decimals: precision)} KB"
+
+      true ->
+        "#{bytes} B"
     end
   end
 
-  def format_traffic(_, _precision), do: "0 GB"
+  def format_traffic(_bytes, _precision), do: "0 B"
 
   def format_speed(nil), do: "Unlimited"
   def format_speed(0), do: "Unlimited"

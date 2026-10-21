@@ -1,3 +1,5 @@
+<Layouts.flash_group flash={@flash} />
+
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <div>
@@ -22,27 +24,31 @@
             </tr>
           </thead>
           <tbody>
-            <%= for subscription <- @subscriptions do %>
+            <%= for sub <- @subs do %>
               <tr class="border-b border-base-300/40 hover:bg-base-200/30">
                 <td class="py-4 px-6">
-                  <div class="font-bold text-sm">{subscription.product.name}</div>
+                  <div class="font-bold text-sm">{sub.product.name}</div>
                   <div class="text-xs text-base-content/50 font-mono">
-                    Service ID #{subscription.id}
+                    Service ID #{sub.id}
                   </div>
                 </td>
                 <td class="py-4 px-6">
-                  <span class="text-success font-medium">{subscription.status}</span>
+                  <%= if sub.status in [:active, :exhausted, :suspended] do %>
+                    <span class="text-success font-medium">Active</span>
+                  <% else %>
+                    <span class="text-success font-medium">Expired</span>
+                  <% end %>
                 </td>
                 <td class="py-4 px-6">
-                  <%= if subscription.status in [:active, :exhausted, :suspended] do %>
+                  <%= if sub.status in [:active, :exhausted, :suspended] do %>
                     <div class="text-xs font-medium mb-1">
-                      {format_traffic(@billing_summaries[subscription.id].used)} / {format_traffic(
-                        @billing_summaries[subscription.id].total
+                      {format_traffic(@billing_summaries[sub.id].used)} / {format_traffic(
+                        @billing_summaries[sub.id].total
                       )}
                     </div>
                     <progress
                       class="progress progress-success w-32 h-1.5"
-                      value={@billing_summaries[subscription.id].percent}
+                      value={@billing_summaries[sub.id].percent}
                       max="100"
                     ></progress>
                   <% else %>
@@ -51,16 +57,16 @@
                 </td>
                 <td class="py-4 px-6 text-xs text-base-content/70 font-mono">
                   {Calendar.strftime(
-                    @billing_summaries[subscription.id].cycle_end,
+                    @billing_summaries[sub.id].cycle_end,
                     "%Y/%m/%d 00:00:00"
                   )}
                 </td>
                 <td class="py-4 px-6 text-xs text-base-content/70 font-mono">
-                  {Calendar.strftime(subscription.expired_at, "%Y/%m/%d 00:00:00")}
+                  {Calendar.strftime(sub.expired_at, "%Y/%m/%d 00:00:00")}
                 </td>
                 <td class="py-4 px-6 text-right">
                   <a
-                    href={~p"/services/#{subscription.id}"}
+                    href={~p"/services/#{sub.id}"}
                     class="text-xs text-warning hover:underline font-medium"
                   >Details</a>
                 </td>

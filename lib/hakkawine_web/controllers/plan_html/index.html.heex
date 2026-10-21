@@ -1,4 +1,5 @@
 <Layouts.flash_group flash={@flash} />
+
 <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
   <!-- Header -->
   <div class="text-center mb-12">
@@ -16,27 +17,39 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
       <%= for plan <- @recurring_plans do %>
         <% default_price = get_default_price(plan.prices)
-        reset_price = get_reset_price(plan.prices) %>
-        <div class={[
-          "card bg-base-100 transition-all duration-300 relative",
-          if(plan.is_recommended,
-            do: "border-2 border-primary ring-2 ring-primary/30 shadow-2xl scale-105 z-10",
-            else: "border border-base-200 shadow-xl hover:shadow-2xl"
-          )
-        ]}>
-          <!-- Recommended Badge -->
-          <%= if plan.is_recommended do %>
-            <div class="badge badge-primary font-bold text-xs uppercase tracking-wider absolute -top-3.5 right-6 shadow-md py-3 px-4">
-              Recommended
-            </div>
-          <% end %>
+        reset_price = get_reset_price(plan.prices)
 
+        is_current = @current_sub != nil and @current_sub.product.code == plan.code
+        is_downgrade = @current_sub != nil and @current_sub.product.tier_rank > plan.tier_rank %>
+
+        <div class="card bg-base-100 border border-base-200 shadow-xl hover:shadow-2xl transition-all duration-300 relative">
           <div class="card-body p-6 flex flex-col justify-between">
             <div>
-              <!-- Title -->
-              <h3 class="card-title text-xl font-bold mb-2">{plan.name}</h3>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <h3 class="card-title text-xl font-bold">{plan.name}</h3>
 
-              <!-- Price -->
+                <div class="flex items-center gap-1 shrink-0">
+                  <%= if is_current do %>
+                    <span class="px-2 py-0.5 rounded text-[11px] bg-success/10 text-success font-medium border border-success/20">Current Plan</span>
+                  <% end %>
+
+                  <%= if plan.is_recommended do %>
+                    <span
+                      class="px-2 py-0.5 rounded text-[11px] bg-warning/10 font-medium border border-warning/30"
+                      style="background-color: rgba(234, 179, 8, 0.15); color: #ca8a04;"
+                    >Recommended</span>
+                  <% end %>
+
+                  <%= if @current_sub != nil and not is_current do %>
+                    <%= if is_downgrade do %>
+                      <span class="px-2 py-0.5 rounded text-[11px] bg-base-200 text-base-content/40 font-medium">Cannot Downgrade</span>
+                    <% else %>
+                      <span class="px-2 py-0.5 rounded text-[11px] bg-info/10 text-info font-medium border border-info/20">Upgradable</span>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+
               <div class="my-4">
                 <%= if default_price do %>
                   <span class="text-3xl font-extrabold">{currency_symbol()}{format_amount(
@@ -50,7 +63,6 @@
 
               <div class="divider my-2"></div>
 
-              <!-- Features List -->
               <ul class="space-y-3 text-sm">
                 <li class="flex justify-between items-center">
                   <span class="text-base-content/70">Traffic Quota</span>
@@ -83,10 +95,9 @@
               </ul>
             </div>
 
-            <!-- Action Button -->
             <div class="card-actions justify-end mt-8 pt-4 border-t border-base-200">
               <%= if plan.status == :active do %>
-                <%= if @subscription == nil do %>
+                <%= if @current_sub == nil do %>
                   <a
                     href={"/checkout/sub/new?code=#{plan.code}"}
                     class="btn btn-primary btn-block rounded-xl"
@@ -94,7 +105,7 @@
                     Subscribe Now
                   </a>
                 <% else %>
-                  <%= if @subscription.product.code == plan.code do %>
+                  <%= if @current_sub.product.code == plan.code do %>
                     <a
                       href={"/checkout/sub/renew?code=#{plan.code}"}
                       class="btn btn-primary btn-block rounded-xl"
@@ -102,7 +113,7 @@
                       Renew
                     </a>
                   <% else %>
-                    <%= if @subscription.product.tier_rank > plan.tier_rank do %>
+                    <%= if @current_sub.product.tier_rank > plan.tier_rank do %>
                       <button
                         class="btn btn-disabled btn-block rounded-xl cursor-not-allowed"
                         disabled
@@ -146,14 +157,20 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
       <%= for plan <- @one_time_plans do %>
-        <% price = get_default_price(plan.prices) %>
+        <% price = get_default_price(plan.prices)
+        is_current = @current_sub != nil and @current_sub.product.code == plan.code %>
         <div class="card bg-base-100 shadow-xl border border-base-200 transition-all duration-200 hover:shadow-2xl">
           <div class="card-body p-6 flex flex-col justify-between">
             <div>
-              <!-- Title -->
-              <h3 class="card-title text-xl font-bold mb-2">{plan.name}</h3>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <h3 class="card-title text-xl font-bold">{plan.name}</h3>
+                <div class="flex items-center gap-1 shrink-0">
+                  <%= if is_current do %>
+                    <span class="px-2 py-0.5 rounded text-[11px] bg-success/10 text-success font-medium border border-success/20">Current Plan</span>
+                  <% end %>
+                </div>
+              </div>
 
-              <!-- Price -->
               <div class="my-4">
                 <%= if price do %>
                   <span class="text-3xl font-extrabold">{currency_symbol()}{format_amount(
@@ -167,7 +184,6 @@
 
               <div class="divider my-2"></div>
 
-              <!-- Features List -->
               <ul class="space-y-3 text-sm">
                 <li class="flex justify-between items-center">
                   <span class="text-base-content/70">Traffic Quota</span>
@@ -200,7 +216,6 @@
               </ul>
             </div>
 
-            <!-- Action Button -->
             <div class="card-actions justify-end mt-8 pt-4 border-t border-base-200">
               <%= if plan.status == :active do %>
                 <a

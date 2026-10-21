@@ -6,12 +6,12 @@ defmodule HakkawineWeb.Router do
   alias HakkawineWeb.Plugs.EnsureAuthenticated
   alias HakkawineWeb.Plugs.RedirectIfAuthenticated
 
-  pipeline :browser do
+  # Basic (Common Browser Stack)
+  pipeline :browser_base do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
     plug :put_root_layout, html: {HakkawineWeb.Layouts, :root}
-    plug :put_layout, html: {HakkawineWeb.Layouts, :app}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
 
@@ -19,15 +19,26 @@ defmodule HakkawineWeb.Router do
     plug FetchCurrentUser
   end
 
+  # Guest
   pipeline :guest_browser do
-    plug :browser
-    plug :put_layout, false
+    plug :browser_base
   end
 
-  scope "/", HakkawineWeb do
-    pipe_through :browser
+  # Logged-in user
+  pipeline :user_browser do
+    plug :browser_base
+    plug :put_layout, html: {HakkawineWeb.Layouts, :app}
+  end
 
-    get "/", PageController, :index
+  # Admin
+  pipeline :admin_browser do
+    plug :browser_base
+    plug :put_layout, html: {HakkawineWeb.Layouts, :admin}
+  end
+
+  # Public API
+  pipeline :api do
+    plug :accepts, ["json"]
   end
 
   scope "/auth", HakkawineWeb do
@@ -48,18 +59,37 @@ defmodule HakkawineWeb.Router do
   end
 
   scope "/auth", HakkawineWeb do
-    pipe_through [:browser, EnsureAuthenticated]
+    pipe_through [:user_browser, EnsureAuthenticated]
 
     delete "/log_out", AuthController, :log_out
   end
 
   scope "/", HakkawineWeb do
-    pipe_through [:browser, EnsureAuthenticated]
+    pipe_through :user_browser
+
+    get "/", PageController, :index
+  end
+
+  scope "/", HakkawineWeb do
+    pipe_through [:user_browser, EnsureAuthenticated]
 
     get "/home", PageController, :home
-
     get "/plans", PlanController, :index
+    get "/account", AccountController, :index
+    get "/tickets", TicketController, :index
+    get "/tickets/new", TicketController, :new
+    get "/knowledges", KnowledgeController, :index
+    get "/announcements", AnnouncementController, :index
+    get "/affiliate", AffiliateController, :index
 
+    # Subscription
+    get "/services", ServiceController, :index
+    get "/services/:sub_id", ServiceController, :details
+    get "/subscriptions/:sub_id/usage", TrafficController, :sub_usage
+    get "/subscriptions/:sub_id/node-stats", TrafficController, :sub_node_stats
+    get "/subscriptions/:sub_id/export", TrafficController, :sub_export
+
+    # Checkout
     get "/checkout/sub/new", CheckoutController, :new_sub
     get "/checkout/sub/renew", CheckoutController, :renew_sub
     get "/checkout/sub/upgrade", CheckoutController, :upgrade_sub
@@ -67,38 +97,36 @@ defmodule HakkawineWeb.Router do
     get "/checkout/addon", CheckoutController, :addon
     get "/checkout/topup", CheckoutController, :topup
 
+    # Order
     post "/order/create", OrderController, :create
     get "/order/status", OrderController, :status
     get "/order/success", OrderController, :success
     get "/order/cancel", OrderController, :cancel
 
-    get "/tickets", TicketController, :index
-    get "/tickets/new", TicketController, :new
-    get "/knowledges", KnowledgeController, :index
-    get "/announcements", AnnouncementController, :index
-    get "/affiliate", AffiliateController, :index
-    get "/services", ServiceController, :index
-    get "/services/:sub_id", ServiceController, :details
-    get "/account", AccountController, :index
+    # Marketing
+    # get "/check-ins", CheckinController, :list
+    # get "/check-ins/summary", CheckinController, :summary
+    post "/check-ins", CheckinController, :create
   end
 
-  pipeline :api do
-    plug :accepts, ["json"]
-  end
+  # scope "/__internal_system_admin_panel__", HakkawineWeb do
+  #   pipe_through [:admin_browser, EnsureAuthenticated]
+  # end
 
+  # Public API
   scope "/api/v1", HakkawineWeb.Api.V1 do
     pipe_through :api
 
     post "/payments/notify/:driver", PaymentsController, :notify
-
     get "/sub/:sub_id/:sub_uuid", SubscriptionController, :index
   end
 
+  # Dev Tools
   if Application.compile_env(:hakkawine, :dev_routes) do
     import Phoenix.LiveDashboard.Router
 
     scope "/dev" do
-      pipe_through :browser
+      pipe_through :user_browser
 
       live_dashboard "/dashboard", metrics: HakkawineWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview

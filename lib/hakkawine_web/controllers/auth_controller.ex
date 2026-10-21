@@ -85,10 +85,13 @@ defmodule HakkawineWeb.AuthController do
   end
 
   def register(conn, %{"user_account" => user_account_params}) do
+    # affid = conn.cookies["affid"]
+
     case Accounts.create_customer(user_account_params) do
       {:ok, _user_account} ->
         conn
         |> put_status(:created)
+        # |> delete_resp_cookie("affid")
         |> render(:register_success)
 
       :deny ->

@@ -1,11 +1,14 @@
 import Config
 
+Hakkawine.MixProject.copy_vendor_js()
+
 config :hakkawine, HakkawineWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:hakkawine, ~w(--sourcemap=inline --watch)]},
+    myesm: {Esbuild, :install_and_run, [:myesm, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:hakkawine, ~w(--watch)]}
   ],
   live_reload: [

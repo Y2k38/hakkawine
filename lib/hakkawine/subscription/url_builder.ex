@@ -1,8 +1,8 @@
 defmodule Hakkawine.Subscription.UrlBuilder do
   use HakkawineWeb, :verified_routes
 
-  def generate_all(subscription, name) do
-    base_url = HakkawineWeb.Endpoint.url() <> ~p"/sub/#{subscription.id}/#{subscription.uuid}"
+  def generate_all(sub, name) do
+    base_url = HakkawineWeb.Endpoint.url() <> ~p"/sub/#{sub.id}/#{sub.uuid}"
 
     %{
       base_url: base_url,

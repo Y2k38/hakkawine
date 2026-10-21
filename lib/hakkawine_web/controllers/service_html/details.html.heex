@@ -1,10 +1,12 @@
+<Layouts.flash_group flash={@flash} />
+
 <div class="space-y-6">
   <div>
     <h1 class="text-2xl font-bold">Service Details</h1>
-    <div class="text-xs text-base-content/60 mb-1">My Services / Service #{@subscription.id}</div>
+    <div class="text-xs text-base-content/60 mb-1">My Services / Service #{@sub.id}</div>
   </div>
 
-  <%= if @subscription.status not in [:active, :exhausted, :suspended] do %>
+  <%= if @sub.status not in [:active, :exhausted, :suspended] do %>
     <div class="alert bg-error/10 border border-error/20 rounded-xl p-4 flex flex-col items-start text-left gap-1">
       <div class="text-sm font-semibold text-error">
         This service has expired, currently viewable only
@@ -20,17 +22,17 @@
       <div class="card bg-base-100 shadow-sm border border-base-300">
         <div class="card-body space-y-4">
           <div class="flex items-center justify-between">
-            {@subscription.product.name}
+            {@sub.product.name}
           </div>
 
           <div class="text-xs text-base-content/60">
-            Service ID #{@subscription.id}
+            Service ID #{@sub.id}
           </div>
 
           <div class="flex items-center gap-2 text-xs font-medium">
-            <%= if @subscription.status in [:active, :exhausted, :suspended] do %>
+            <%= if @sub.status in [:active, :exhausted, :suspended] do %>
               <span class="text-success">Active</span>
-              <span class="text-success">{remaining_days_text(@subscription.expired_at)}</span>
+              <span class="text-success">{remaining_days_text(@sub.expired_at)}</span>
             <% else %>
               <span class="text-error">Expired</span>
             <% end %>
@@ -86,14 +88,14 @@
             <div class="flex justify-between py-1 border-b border-base-300/40">
               <span class="text-base-content/60">Expiration</span>
               <span class="font-mono font-medium">{Calendar.strftime(
-                @subscription.expired_at,
+                @sub.expired_at,
                 "%Y/%m/%d"
               )}</span>
             </div>
             <div class="flex justify-between py-1 border-b border-base-300/40">
               <span class="text-base-content/60">Next Reset</span>
               <span class="font-medium">
-                <%= if @subscription.status == :expired do %>
+                <%= if @sub.status == :expired do %>
                   Expired
                 <% else %>
                   {in_days_text(@billing_summary.cycle_end)}
@@ -102,19 +104,17 @@
             </div>
             <div class="flex justify-between py-1 border-b border-base-300/40">
               <span class="text-base-content/60">Current Online</span>
-              <span class="font-mono font-medium">{@online_device_count}/{@subscription.snap_limit_device_count}</span>
+              <span class="font-mono font-medium">{@online_device_count}/{@sub.snap_limit_device_count}</span>
             </div>
             <div class="flex justify-between py-1">
               <span class="text-base-content/60">Speed Limit</span>
-              <span class="font-mono font-medium">{format_speed(
-                @subscription.snap_limit_speed_mbps
-              )}</span>
+              <span class="font-mono font-medium">{format_speed(@sub.snap_limit_speed_mbps)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <%= if @subscription.status in [:active, :exhausted, :suspended] do %>
+      <%= if @sub.status in [:active, :exhausted, :suspended] do %>
         <div class="card bg-base-100 shadow-sm border border-base-300">
           <div class="card-body space-y-4">
             <div class="flex items-center justify-between">
@@ -126,11 +126,11 @@
               <div class="text-xs text-base-content/50">One-click Import</div>
               <div class="grid grid-cols-2 gap-2">
                 <a
-                  href={@subscription_urls.clash_url}
+                  href={@sub_urls.clash_url}
                   class="btn btn-sm btn-ghost bg-base-200/40 border border-base-300/60 justify-start font-normal text-xs"
                 >Clash</a>
                 <a
-                  href={@subscription_urls.shadowrocket_url}
+                  href={@sub_urls.shadowrocket_url}
                   class="btn btn-sm btn-ghost bg-base-200/40 border border-base-300/60 justify-start font-normal text-xs"
                 >Shadowrocket</a>
               </div>
@@ -138,7 +138,7 @@
               <button
                 type="button"
                 class="btn btn-warning text-warning-content btn-sm w-full font-normal"
-                data-clipboard-url={@subscription_urls.base_url}
+                data-clipboard-url={@sub_urls.base_url}
                 onclick="
                   const url = this.getAttribute('data-clipboard-url');
                   navigator.clipboard.writeText(url).then(() => {
@@ -158,7 +158,7 @@
     </div>
 
     <div class="lg:col-span-2 space-y-6">
-      <%= if @subscription.status in [:active, :exhausted, :suspended] do %>
+      <%= if @sub.status in [:active, :exhausted, :suspended] do %>
         <div class="card bg-base-100 shadow-sm border border-base-300">
           <div class="card-body">
             <div class="flex items-center justify-between gap-4">
@@ -169,12 +169,16 @@
                 </p>
               </div>
               <div class="flex flex-wrap gap-2">
-                <%= if @subscription.product.charge_type == :recurring do %>
+                <%= if @sub.product.charge_type == :recurring do %>
                   <a
                     href={~p"/checkout/sub/renew"}
-                    class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+                    class={
+                      if @expires_in_one_month,
+                        do: "btn btn-sm btn-warning text-warning-content font-medium",
+                        else: "btn btn-sm btn-ghost bg-base-200/60 font-normal"
+                    }
                   >Renew</a>
-                  <%= if @subscription.product.tier_rank < 3 do %>
+                  <%= if @sub.product.tier_rank < 3 do %>
                     <a
                       href={~p"/checkout/sub/upgrade"}
                       class="btn btn-sm btn-warning text-warning-content font-medium"
@@ -212,57 +216,112 @@
 
       <div class="card bg-base-100 shadow-sm border border-base-300">
         <div class="card-body space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
+          <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
               <h2 class="card-title text-base font-bold">Traffic Usage</h2>
-              <p class="text-xs text-base-content/60 mt-0.5">
-                This billing cycle (max 31 days) · 5-minute granularity
-              </p>
+              <div class="flex gap-2 shrink-0">
+                <a
+                  id="btn-node-usage"
+                  class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+                  data-endpoint={~p"/subscriptions/#{@sub.id}/node-stats"}
+                >
+                  Node Usage
+                </a>
+                <a
+                  id="btn-export-excel"
+                  href="#"
+                  class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+                  data-endpoint={~p"/subscriptions/#{@sub.id}/export"}
+                  target="_blank"
+                >
+                  Export Excel
+                </a>
+              </div>
             </div>
-            <div class="flex gap-2">
-              <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Node Usage</button>
-              <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Export Excel</button>
-            </div>
+            <p class="text-xs text-base-content/60">
+              <span id="traffic_usage_desc">This billing cycle (max 31 days)</span>
+              · 5-minute granularity <span id="traffic_usage_time_range"></span>
+            </p>
           </div>
 
-          <div class="flex gap-2">
-            <button class="btn btn-xs btn-neutral font-medium">This Billing Cycle</button>
-            <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal">Last 31 Days</button>
+          <div class="flex items-center gap-2" id="period-switch-group">
+            <button
+              type="button"
+              class="btn btn-xs btn-neutral font-medium period-btn"
+              data-period="current"
+              data-desc="This billing cycle (max 31 days)"
+              aria-pressed="true"
+            >
+              This Billing Cycle
+            </button>
+            <button
+              type="button"
+              class="btn btn-xs btn-ghost bg-base-200/60 font-normal period-btn"
+              data-period="last_31d"
+              data-desc="Last 31 days"
+              aria-pressed="false"
+            >
+              Last 31 Days
+            </button>
           </div>
 
           <div class="grid grid-cols-3 gap-4 py-2 text-sm border-y border-base-300/40">
             <div>
               <div class="text-xs text-base-content/60 mb-1">Upload</div>
-              <div class="font-semibold text-base">1.62 GB</div>
+              <div class="font-semibold text-base" id="summary-upload">0.00 GB</div>
             </div>
             <div>
               <div class="text-xs text-base-content/60 mb-1">Download</div>
-              <div class="font-semibold text-base">17.73 GB</div>
+              <div class="font-semibold text-base" id="summary-download">0.00 GB</div>
             </div>
             <div>
               <div class="text-xs text-base-content/60 mb-1">Total</div>
-              <div class="font-semibold text-base">19.35 GB</div>
+              <div class="font-semibold text-base" id="summary-total">0.00 GB</div>
             </div>
           </div>
 
-          <div class="bg-base-200/30 rounded-2xl p-4 border border-base-300/40 space-y-3">
+          <div
+            id="traffic-widget"
+            class="bg-base-200/30 rounded-2xl p-4 border border-base-300/40 space-y-3"
+            data-default-period="1"
+          >
             <div class="text-xs text-base-content/50">
               5-minute granularity · Drag horizontally to select range and zoom
             </div>
-            <div class="h-48 flex items-center justify-center border border-dashed border-base-300 rounded-xl text-xs text-base-content/40 font-mono">
-              [Traffic Chart Area]
+
+            <div
+              id="traffic-echarts"
+              class="h-64 w-full"
+              data-api-endpoint={~p"/subscriptions/#{@sub.id}/usage"}
+            >
             </div>
+
             <div class="flex items-center justify-between text-xs text-base-content/60 pt-1">
               <div class="flex items-center gap-4">
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-warning"></span>
-                Total</span>
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-base-content/60"></span>
-                Upload</span>
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-info"></span>
-                Download</span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" style="background-color: #fbbd23;"></span>Total
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" style="background-color: #9ca3af;"></span>Upload
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" style="background-color: #3abff8;"></span>Download
+                </span>
               </div>
-              <span>2026-09-17 00:00 to present · Peak 499.39 MiB</span>
+              <span id="chart-range-label">Loading...</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="node-modal" class="modal hidden">
+        <div class="modal-box">
+          <h3 class="font-bold text-lg">Node Usage Breakdown</h3>
+          <div class="py-4" id="node-modal-content">
+            Loading...
+          </div>
+          <div class="modal-action">
+            <button type="button" class="btn" id="close-node-modal">Close</button>
           </div>
         </div>
       </div>
@@ -298,7 +357,7 @@
                   </div>
                   <a
                     href={
-                      ~p"/checkout/addon?subscription_id=#{@subscription.id}&target_product_code=#{addon.code}"
+                      ~p"/checkout/addon?subscription_id=#{@sub.id}&target_product_code=#{addon.code}"
                     }
                     class="btn btn-sm btn-warning text-warning-content px-6"
                   >Buy</a>
@@ -311,3 +370,112 @@
     </div>
   </div>
 </div>
+
+<script src={~p"/assets/js/echarts.min.js"}>
+</script>
+
+<script type="module">
+  import { TrafficChartWidget } from "/assets/js/charts.js";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const filterState = {
+      period: 'current',
+      startTime: null,
+      endTime: null
+    }
+
+    const chartContainer = document.querySelector("#traffic-echarts");
+    const apiEndpoint = chartContainer.dataset.apiEndpoint;
+
+    const trafficWidget = new TrafficChartWidget("#traffic-echarts", {
+      apiEndpoint: apiEndpoint
+    });
+
+    trafficWidget.loadData(filterState.period, filterState.startTime, filterState.endTime);
+
+    trafficWidget.onDataLoaded = ({ period, start_time, end_time, aligned_start, aligned_end, interval_minutes, summary, traffic_data }) => {
+      document.getElementById('summary-upload').innerText = HakkawineJS.formatTraffic(summary.total_up) || "0.00 GB";
+      document.getElementById('summary-download').innerText = HakkawineJS.formatTraffic(summary.total_down) || "0.00 GB";
+      document.getElementById('summary-total').innerText = HakkawineJS.formatTraffic(summary.total_traffic) || "0.00 GB";
+
+      updateRangeLabel(start_time, end_time, aligned_start, aligned_end, summary);
+      updateRangeDesc(period, start_time, end_time, aligned_start, aligned_end);
+    };
+
+    trafficWidget.onBrushChange(({startTime, endTime}) => {
+      filterState.startTime = startTime
+      filterState.endTime = endTime
+
+      trafficWidget.loadData(filterState.period, filterState.startTime, filterState.endTime);
+    });
+
+    const trafficUsageDescEl = document.getElementById('traffic_usage_desc');
+
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const currentBtn = e.currentTarget;
+
+        document.querySelectorAll('#period-switch-group .period-btn').forEach(b => {
+          b.className = "btn btn-xs btn-ghost text-base-content/70 font-normal period-btn";
+          b.setAttribute('aria-pressed', 'false');
+        });
+
+        currentBtn.className = "btn btn-xs btn-neutral shadow-sm font-medium period-btn active";
+        currentBtn.setAttribute('aria-pressed', 'true');
+
+        filterState.period = currentBtn.dataset.period;
+        filterState.start_time = null;
+        filterState.end_time = null;
+
+        trafficWidget.loadData(filterState.period, filterState.start_time, filterState.end_time);
+
+        if (trafficUsageDescEl) {
+          trafficUsageDescEl.innerText = currentBtn.dataset.desc;
+        }
+      });
+    });
+
+    function updateRangeLabel(startTime, endTime, aligned_start, aligned_end, summary) {
+      let labelEl = document.getElementById('chart-range-label');
+      if (!labelEl) return;
+      let timeText = "";
+
+      if (startTime && endTime) {
+        timeText = `${aligned_start} to ${aligned_end}`; 
+      } else {
+        timeText = `${aligned_start} to Present`; 
+      }
+
+      let peakText = summary?.peak_total ? `· Peak ${HakkawineJS.formatTraffic(summary.peak_total)}` : "";
+      labelEl.innerText = `${timeText} ${peakText}`;
+    }
+
+    function updateRangeDesc(period, startTime, endTime, aligned_start, aligned_end) {
+      let elem = document.getElementById('traffic_usage_time_range');
+      if (!elem) return;
+      let timeText = "";
+
+      if (startTime && endTime) {
+        timeText = `· Current summary: ${aligned_start} to ${aligned_end}`; 
+      } else {
+        timeText = ``; 
+      }
+
+      elem.innerText = timeText
+    }
+
+    document.getElementById('btn-export-excel').addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      const baseUrl = e.currentTarget.dataset.endpoint;
+
+      const params = new URLSearchParams();
+      if (filterState.period) params.append('period', filterState.period);
+      if (filterState.start_time) params.append('start_time', filterState.start_time);
+      if (filterState.end_time) params.append('end_time', filterState.end_time);
+
+      const finalUrl = `${baseUrl}?${params.toString()}`;
+      window.open(finalUrl, '_blank');
+    });
+  });
+</script>

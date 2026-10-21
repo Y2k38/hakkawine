@@ -14,8 +14,6 @@ CREATE TABLE products (
     status product_status NOT NULL DEFAULT 'draft',
     charge_type charge_type NOT NULL DEFAULT 'recurring',
     tier_rank int NOT NULL,
-    commission_type commission_type,
-    commission_rate DECIMAL(5, 4),
     is_recommended boolean NOT NULL DEFAULT FALSE,
     sort_order int NOT NULL DEFAULT 0,
     traffic_quota_bytes bigint,
