@@ -61,4 +61,67 @@ defmodule Hakkawine.AccountsTest do
       assert %Ecto.Changeset{} = Accounts.change_user_account(user_account)
     end
   end
+
+  describe "mock_tables" do
+    alias Hakkawine.Accounts.DashboardMock
+
+    import Hakkawine.AccountsFixtures
+
+    @invalid_attrs %{value: nil, title: nil}
+
+    test "list_mock_tables/0 returns all mock_tables" do
+      dashboard_mock = dashboard_mock_fixture()
+      assert Accounts.list_mock_tables() == [dashboard_mock]
+    end
+
+    test "get_dashboard_mock!/1 returns the dashboard_mock with given id" do
+      dashboard_mock = dashboard_mock_fixture()
+      assert Accounts.get_dashboard_mock!(dashboard_mock.id) == dashboard_mock
+    end
+
+    test "create_dashboard_mock/1 with valid data creates a dashboard_mock" do
+      valid_attrs = %{value: 42, title: "some title"}
+
+      assert {:ok, %DashboardMock{} = dashboard_mock} =
+               Accounts.create_dashboard_mock(valid_attrs)
+
+      assert dashboard_mock.value == 42
+      assert dashboard_mock.title == "some title"
+    end
+
+    test "create_dashboard_mock/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_dashboard_mock(@invalid_attrs)
+    end
+
+    test "update_dashboard_mock/2 with valid data updates the dashboard_mock" do
+      dashboard_mock = dashboard_mock_fixture()
+      update_attrs = %{value: 43, title: "some updated title"}
+
+      assert {:ok, %DashboardMock{} = dashboard_mock} =
+               Accounts.update_dashboard_mock(dashboard_mock, update_attrs)
+
+      assert dashboard_mock.value == 43
+      assert dashboard_mock.title == "some updated title"
+    end
+
+    test "update_dashboard_mock/2 with invalid data returns error changeset" do
+      dashboard_mock = dashboard_mock_fixture()
+
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.update_dashboard_mock(dashboard_mock, @invalid_attrs)
+
+      assert dashboard_mock == Accounts.get_dashboard_mock!(dashboard_mock.id)
+    end
+
+    test "delete_dashboard_mock/1 deletes the dashboard_mock" do
+      dashboard_mock = dashboard_mock_fixture()
+      assert {:ok, %DashboardMock{}} = Accounts.delete_dashboard_mock(dashboard_mock)
+      assert_raise Ecto.NoResultsError, fn -> Accounts.get_dashboard_mock!(dashboard_mock.id) end
+    end
+
+    test "change_dashboard_mock/1 returns a dashboard_mock changeset" do
+      dashboard_mock = dashboard_mock_fixture()
+      assert %Ecto.Changeset{} = Accounts.change_dashboard_mock(dashboard_mock)
+    end
+  end
 end

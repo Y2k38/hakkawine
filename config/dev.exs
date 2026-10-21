@@ -1,5 +1,7 @@
 import Config
 
+Hakkawine.MixProject.copy_vendor_js()
+
 config :hakkawine, HakkawineWeb.Endpoint,
   check_origin: false,
   code_reloader: true,

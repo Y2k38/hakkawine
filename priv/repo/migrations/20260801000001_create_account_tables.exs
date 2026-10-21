@@ -25,7 +25,6 @@ defmodule Hakkawine.Repo.Migrations.CreateAccountTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end

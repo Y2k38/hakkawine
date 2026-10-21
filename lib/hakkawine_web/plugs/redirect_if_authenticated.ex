@@ -1,5 +1,4 @@
 defmodule HakkawineWeb.Plugs.RedirectIfAuthenticated do
-  import Plug.Conn
   import Phoenix.Controller
 
   def init(opts), do: opts
@@ -8,7 +7,6 @@ defmodule HakkawineWeb.Plugs.RedirectIfAuthenticated do
     if conn.assigns[:current_user] do
       conn
       |> redirect(to: "/")
-      |> halt()
     else
       conn
     end

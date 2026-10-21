@@ -22,10 +22,7 @@ defmodule Hakkawine.Billing.PaymentAccount do
     field :last_daily_reset_at, :integer
     field :last_yearly_reset_at, :integer
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(payment_account, attrs) do

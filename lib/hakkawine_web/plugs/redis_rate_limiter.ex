@@ -1,6 +1,10 @@
 defmodule HakkawineWeb.Plugs.RedisRateLimiter do
+  require Logger
+
   import Plug.Conn
   import Phoenix.Controller, only: [json: 2, put_flash: 3, redirect: 2]
+
+  alias Hakkawine.Utils.RequestHelpers
 
   def init(opts) do
     %{
@@ -28,27 +32,44 @@ defmodule HakkawineWeb.Plugs.RedisRateLimiter do
 
       {:error, :rate_limited} ->
         conn
-        |> render_rate_limited_response()
+        |> push_flash_message()
+        |> halt()
+
+      {:error, {error_type, reason}} ->
+        Logger.error("Rate limiter failed [#{error_type}]: #{inspect(reason)}")
+
+        conn
+        |> handle_server_error()
         |> halt()
     end
   end
 
-  defp render_rate_limited_response(conn) do
+  defp push_flash_message(conn) do
+    handle_error_response(conn, :too_many_requests, "Too many requests. Please try again later.")
+  end
+
+  defp handle_server_error(conn) do
+    handle_error_response(conn, :internal_server_error, "Something went wrong. Please try again.")
+  end
+
+  defp handle_error_response(conn, status, message) do
+    http_status = Plug.Exception.status(status) || status
+
     cond do
       json_request?(conn) ->
         conn
-        |> put_status(:too_many_requests)
-        |> json(%{error: "Too many requests. Please try again later."})
+        |> put_status(http_status)
+        |> json(%{error: message})
 
       Map.has_key?(conn.private, :plug_session) ->
         conn
-        |> put_flash(:error, "Too many requests. Please try again later.")
+        |> put_flash(:error, message)
         |> redirect(to: safe_referer_path(conn))
 
       true ->
         conn
-        |> put_status(:too_many_requests)
-        |> send_resp(429, "Too many requests. Please try again later.")
+        |> put_status(http_status)
+        |> send_resp(http_status, message)
     end
   end
 
@@ -71,7 +92,7 @@ defmodule HakkawineWeb.Plugs.RedisRateLimiter do
   end
 
   defp get_client_identifier(conn) do
-    ip_str = conn.remote_ip |> :inet.ntoa() |> to_string()
+    ip_str = RequestHelpers.get_client_ip(conn)
     ua = get_req_header(conn, "user-agent") |> List.first() || "unknown"
 
     :crypto.hash(:sha256, "#{ip_str}:#{ua}")
@@ -85,11 +106,17 @@ defmodule HakkawineWeb.Plugs.RedisRateLimiter do
     ]
 
     case Redix.pipeline(:redix, commands) do
-      {:ok, [current_count, _expire_res]} ->
+      {:ok, [%Redix.Error{} = error, _]} ->
+        {:error, {:redis_error, error}}
+
+      {:ok, [current_count, _expire_res]} when is_integer(current_count) ->
         if current_count <= max_attempts, do: :ok, else: {:error, :rate_limited}
 
-      {:error, _reason} ->
-        :ok
+      {:ok, [unexpected, _]} ->
+        {:error, {:unexpected_response, unexpected}}
+
+      {:error, reason} ->
+        {:error, {:network_error, reason}}
     end
   end
 end

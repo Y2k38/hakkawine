@@ -1,5 +1,6 @@
 defmodule Hakkawine.Audits.UserAuditAction do
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @primary_key {:code, :string, autogenerate: false}
@@ -10,7 +11,6 @@ defmodule Hakkawine.Audits.UserAuditAction do
 
     timestamps(
       type: :utc_datetime_usec,
-      inserted_at: :created_at,
       updated_at: false
     )
   end

@@ -36,16 +36,16 @@ config :gettext, :default_locale, "en"
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
 config :esbuild,
-  version: "0.25.4",
+  version: "0.28.2",
   hakkawine: [
     args:
-      ~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
+      ~w(js/app.js js/chart.js --bundle --format=esm --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 config :tailwind,
-  version: "4.3.0",
+  version: "4.3.3",
   hakkawine: [
     args: ~w(
       --input=assets/css/app.css

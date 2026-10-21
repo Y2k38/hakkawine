@@ -16,10 +16,7 @@ defmodule Hakkawine.Catalog.ProductPrice do
 
     belongs_to :product, Product
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

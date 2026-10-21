@@ -1,8 +1,9 @@
 defmodule Hakkawine.Audits.AdminAuditLog do
   use Ecto.Schema
+
   import Ecto.Changeset
 
-  @primary_key false
+  @primary_key {:id, :id, autogenerate: true}
   schema "admin_audit_logs" do
     field :operator_id, :integer
     field :action_code, :string
@@ -14,7 +15,6 @@ defmodule Hakkawine.Audits.AdminAuditLog do
 
     timestamps(
       type: :utc_datetime_usec,
-      inserted_at: :created_at,
       updated_at: false
     )
   end

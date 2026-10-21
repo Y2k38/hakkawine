@@ -19,10 +19,7 @@ defmodule Hakkawine.Billing.PaymentMethod do
     field :is_default, :boolean
     field :sort_order, :integer
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(payment_method, attrs) do

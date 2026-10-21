@@ -8,10 +8,7 @@ defmodule Hakkawine.Affiliate.UserCommission do
     field :commission_balance, :decimal
     field :total_earned, :decimal
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(user_commission, attrs) do

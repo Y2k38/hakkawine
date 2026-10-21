@@ -1,6 +1,5 @@
 defmodule Hakkawine.Accounts do
   import Ecto.Query
-  import Hakkawine.Repo.Query
 
   alias Hakkawine.Repo
   alias Hakkawine.Accounts.UserAccount
@@ -18,7 +17,7 @@ defmodule Hakkawine.Accounts do
 
   # Login
   defdelegate login_changeset(user_account, attrs \\ %{}), to: UserAccount
-  defdelegate login(attrs \\ %{}), to: Login
+  defdelegate do_login(attrs, ip, ua), to: Login
 
   # forgot password
   defdelegate forgot_password_changeset(user_account, attrs \\ %{}), to: UserAccount
@@ -29,17 +28,35 @@ defmodule Hakkawine.Accounts do
   defdelegate verify_reset_token(token), to: ResetPassword
   defdelegate reset_password(attrs \\ %{}), to: ResetPassword
 
-  def get_user(user_id, opts \\ []) do
+  defp get_user_base(user_id) do
     UserAccount
     |> where(id: ^user_id)
-    |> apply_opts(opts)
+  end
+
+  def get_user(user_id) do
+    get_user_base(user_id)
     |> Repo.one()
   end
 
-  def get_user_by_email(email, opts \\ []) do
+  def get_locked_user(user_id) do
+    get_user_base(user_id)
+    |> lock("FOR UPDATE")
+    |> Repo.one()
+  end
+
+  defp get_user_by_email_base(email) do
     UserAccount
     |> where(email: ^email)
-    |> apply_opts(opts)
+  end
+
+  def get_user_by_email(email) do
+    get_user_by_email_base(email)
+    |> Repo.one()
+  end
+
+  def get_locked_user_by_email(email) do
+    get_user_by_email_base(email)
+    |> lock("FOR UPDATE")
     |> Repo.one()
   end
 end

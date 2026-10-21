@@ -18,7 +18,7 @@ CREATE TABLE user_accounts (
     invite_code varchar(16),
     invite_count int NOT NULL DEFAULT 0,
     suspended_until timestamptz,
-    created_at timestamptz NOT NULL DEFAULT NOW(),
+    inserted_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 

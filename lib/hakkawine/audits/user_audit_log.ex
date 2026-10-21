@@ -1,18 +1,18 @@
 defmodule Hakkawine.Audits.UserAuditLog do
   use Ecto.Schema
+
   import Ecto.Changeset
 
-  @primary_key false
+  @primary_key {:id, :id, autogenerate: true}
   schema "user_audit_logs" do
     field :user_id, :integer
     field :action_code, :string
-    field :ip_address, EctoNetwork.INET
+    field :ip_address, :string
     field :user_agent, :string
     field :metadata, :map, default: %{}
 
     timestamps(
       type: :utc_datetime_usec,
-      inserted_at: :created_at,
       updated_at: false
     )
   end

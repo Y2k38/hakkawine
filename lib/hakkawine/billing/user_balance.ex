@@ -7,10 +7,7 @@ defmodule Hakkawine.Billing.UserBalance do
   schema "user_balances" do
     field :balance, :decimal
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(user_balance, attrs) do

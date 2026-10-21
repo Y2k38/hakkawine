@@ -21,10 +21,7 @@ defmodule Hakkawine.Agents.Agent do
     field :traffic_reset_day, :integer
     field :labels, :map
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   def generate_client_id do

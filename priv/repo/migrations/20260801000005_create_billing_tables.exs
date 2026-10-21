@@ -33,14 +33,13 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
 
     create unique_index(:orders, [:order_no], name: :uk_orders_order_no)
 
-    create index(:orders, [:user_id, :status, "created_at DESC"],
+    create index(:orders, [:user_id, :status, "inserted_at DESC"],
              name: :idx_orders_user_status_created
            )
 
@@ -62,7 +61,6 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -89,7 +87,6 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -118,7 +115,6 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -132,9 +128,24 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
     create index(:payment_records, [:order_id, :status], name: :idx_payment_records_order_status)
 
-    create index(:payment_records, [:user_id, :status, "created_at DESC"],
+    create index(:payment_records, [:user_id, :status, "inserted_at DESC"],
              name: :idx_payment_records_user_status_created
            )
+
+    execute "CREATE TYPE bonus_type AS ENUM('fixed_amount', 'percentage');"
+
+    create table(:topup_rules, primary_key: false) do
+      add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
+      add :min_amount, :decimal, precision: 38, scale: 18, null: false
+      add :max_amount, :decimal, precision: 38, scale: 18
+      add :bonus_type, :bonus_type
+      add :bonus_value, :decimal, precision: 38, scale: 18
+
+      timestamps(
+        type: :timestamptz,
+        default: fragment("NOW()")
+      )
+    end
 
     create table(:user_balances, primary_key: false) do
       add :user_id, :bigint, primary_key: true, null: false
@@ -142,7 +153,6 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -163,13 +173,12 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         updated_at: false,
         default: fragment("NOW()")
       )
     end
 
-    create index(:user_balance_logs, [:user_id, "created_at DESC"],
+    create index(:user_balance_logs, [:user_id, "inserted_at DESC"],
              name: :idx_balance_logs_user_id
            )
   end
@@ -187,11 +196,13 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
 
     drop_if_exists table(:user_balance_logs)
     drop_if_exists table(:user_balances)
+    drop_if_exists table(:topup_rules)
     drop_if_exists table(:payment_records)
     drop_if_exists table(:payment_methods)
     drop_if_exists table(:orders)
 
     execute "DROP TYPE IF EXISTS balance_log_type;"
+    execute "DROP TYPE IF EXISTS bonus_type;"
     execute "DROP TYPE IF EXISTS payment_record_status;"
     execute "DROP TYPE IF EXISTS billing_cycle;"
     execute "DROP TYPE IF EXISTS order_status;"

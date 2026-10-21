@@ -25,7 +25,6 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -47,7 +46,6 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end

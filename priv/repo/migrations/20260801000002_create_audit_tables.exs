@@ -10,13 +10,13 @@ defmodule Hakkawine.Repo.Migrations.CreateAuditTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         updated_at: false,
         default: fragment("NOW()")
       )
     end
 
     create table(:user_audit_logs, primary_key: false) do
+      add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :user_id, :bigint, null: false
       add :action_code, :string, size: 50, null: false
       add :ip_address, :inet
@@ -25,24 +25,15 @@ defmodule Hakkawine.Repo.Migrations.CreateAuditTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         updated_at: false,
         default: fragment("NOW()")
       )
     end
 
-    create index(:user_audit_logs, [:user_id, {:desc, :created_at}], name: :idx_ual_user_time)
-
-    create index(:user_audit_logs, [:action_code, {:desc, :created_at}],
-             name: :idx_ual_action_time
-           )
-
-    create index(:user_audit_logs, [:ip_address, {:desc, :created_at}],
-             name: :idx_ual_ip_time,
-             where: "ip_address IS NOT NULL"
-           )
+    create index(:user_audit_logs, [:user_id, {:desc, :inserted_at}], name: :idx_ual_user_time)
 
     create table(:admin_audit_logs, primary_key: false) do
+      add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :operator_id, :bigint, null: false
       add :action_code, :string, size: 50, null: false
       add :target_type, :string, size: 50
@@ -53,23 +44,13 @@ defmodule Hakkawine.Repo.Migrations.CreateAuditTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         updated_at: false,
         default: fragment("NOW()")
       )
     end
 
-    create index(:admin_audit_logs, [:operator_id, {:desc, :created_at}],
+    create index(:admin_audit_logs, [:operator_id, {:desc, :inserted_at}],
              name: :idx_aal_operator_time
-           )
-
-    create index(:admin_audit_logs, [:target_type, :target_id],
-             name: :idx_aal_target,
-             where: "target_id IS NOT NULL"
-           )
-
-    create index(:admin_audit_logs, [:action_code, {:desc, :created_at}],
-             name: :idx_aal_action_time
            )
   end
 end

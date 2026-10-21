@@ -28,7 +28,6 @@ defmodule Hakkawine.Billing.UserBalanceLog do
 
     timestamps(
       type: :utc_datetime_usec,
-      inserted_at: :created_at,
       updated_at: false
     )
   end

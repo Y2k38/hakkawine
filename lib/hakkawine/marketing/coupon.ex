@@ -16,10 +16,7 @@ defmodule Hakkawine.Marketing.Coupon do
     field :end_at, :utc_datetime_usec
     field :is_active, :boolean
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

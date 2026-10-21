@@ -22,10 +22,7 @@ defmodule Hakkawine.Billing.PaymentRecord do
     field :callback_payload, :map
     field :paid_at, :utc_datetime_usec
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(payment_records, attrs) do

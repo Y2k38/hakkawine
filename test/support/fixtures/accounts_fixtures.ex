@@ -17,4 +17,19 @@ defmodule Hakkawine.AccountsFixtures do
 
     user_account
   end
+
+  @doc """
+  Generate a dashboard_mock.
+  """
+  def dashboard_mock_fixture(attrs \\ %{}) do
+    {:ok, dashboard_mock} =
+      attrs
+      |> Enum.into(%{
+        title: "some title",
+        value: 42
+      })
+      |> Hakkawine.Accounts.create_dashboard_mock()
+
+    dashboard_mock
+  end
 end

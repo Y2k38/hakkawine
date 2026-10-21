@@ -7,7 +7,7 @@ defmodule Hakkawine.DatabaseSeeder do
     entries =
       Enum.map(data_list, fn item ->
         item
-        |> Map.put_new(:created_at, now)
+        |> Map.put_new(:inserted_at, now)
       end)
 
     on_conflict_strategy =

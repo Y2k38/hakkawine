@@ -3,7 +3,7 @@ CREATE TABLE settings (
     key VARCHAR(64) NOT NULL PRIMARY KEY,
     value jsonb NOT NULL,
     description varchar(255) NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT NOW(),
+    inserted_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -64,7 +64,7 @@ CREATE TABLE agent_labels (
     key varchar(64) NOT NULL,
     name varchar(64) NOT NULL,
     is_enabled boolean NOT NULL DEFAULT true,
-    created_at timestamptz NOT NULL DEFAULT NOW(),
+    inserted_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 

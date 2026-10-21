@@ -1,0 +1,50 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold">My Account</h1>
+    <p class="text-sm text-base-content/60 mt-1">
+      Account, balance top-up, notifications, and billing records
+    </p>
+  </div>
+
+  <div class="flex gap-2 mb-6">
+    <button
+      class={[
+        "btn btn-sm font-medium",
+        @current_tab == "main" && "btn-neutral",
+        @current_tab != "main" && "btn-ghost bg-base-200/60 font-normal"
+      ]}
+      phx-click="switch_tab"
+      phx-value-tab="main"
+    >
+      Account & Top-up
+    </button>
+    <button
+      class={[
+        "btn btn-sm font-medium",
+        @current_tab == "billing" && "btn-neutral",
+        @current_tab != "billing" && "btn-ghost bg-base-200/60 font-normal"
+      ]}
+      phx-click="switch_tab"
+      phx-value-tab="billing"
+    >
+      Billing Records
+    </button>
+  </div>
+
+  <%= if @current_tab == "main" do %>
+    <.live_component
+      module={HakkawineWeb.UserAccountLive.Components.MainComponent}
+      id="main-widget"
+      user_id={@user_id}
+      session_id={@session_id}
+      current_user={@current_user}
+      user_balance={@user_balance}
+      topup_rules={@topup_rules}
+    />
+  <% else %>
+    <.live_component
+      module={HakkawineWeb.UserAccountLive.Components.BillingComponent}
+      id="billing-widget"
+    />
+  <% end %>
+</div>

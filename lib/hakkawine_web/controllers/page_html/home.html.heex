@@ -1,10 +1,10 @@
 <Layouts.flash_group flash={@flash} />
 
 <div class="space-y-6">
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 space-y-6">
-      <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+    <div class="lg:col-span-2 order-1 flex flex-col">
+      <div class="card bg-base-100 shadow-sm border border-base-300 h-full flex flex-col">
+        <div class="card-body flex-1 flex flex-col justify-between">
           <div class="flex items-center justify-between mb-2">
             <h2 class="card-title text-base font-bold">My Services</h2>
             <div class="flex gap-2">
@@ -13,61 +13,121 @@
             </div>
           </div>
 
-          <.link
-            :for={subscription <- @subscriptions}
-            href={~p"/services/#{subscription.id}"}
-            class="card bg-base-200/40 shadow-sm border border-base-300 rounded-2xl p-5 block hover:border-warning hover:shadow-md transition-all cursor-pointer space-y-4"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-lg">{subscription.product.name}</span>
-              <span class="badge badge-success text-success-content font-medium text-xs px-2.5 py-1">Active</span>
-            </div>
-
-            <% item = Map.get(@billing_summaries, subscription.id) %>
-
-            <div class="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <div class="text-base-content/60 text-xs mb-1">Plan Traffic</div>
-                <div class="font-semibold text-base">{format_traffic(item.total)}</div>
+          <%= if @subs != [] do %>
+            <.link
+              :for={sub <- @subs}
+              href={~p"/services/#{sub.id}"}
+              class="card bg-base-200/40 shadow-sm border border-base-300 rounded-lg p-5 block hover:border-warning hover:shadow-md transition-all cursor-pointer space-y-4 my-auto"
+            >
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-lg">{sub.product.name}</span>
+                <span class="badge badge-success text-success-content font-medium text-xs px-2.5 py-1">Active</span>
               </div>
-              <div>
-                <div class="text-base-content/60 text-xs mb-1">Used Traffic</div>
-                <div class="font-semibold text-base">{format_traffic(item.used)}</div>
-              </div>
-              <div>
-                <div class="text-base-content/60 text-xs mb-1">Remaining Traffic</div>
-                <div class="font-semibold text-base">
-                  {format_traffic(item.remaining)}
+
+              <% item = Map.get(@billing_summaries, sub.id) %>
+
+              <div class="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div class="text-base-content/60 text-xs mb-1">Plan Traffic</div>
+                  <div class="font-semibold text-base">{format_traffic(item.total)}</div>
+                </div>
+                <div>
+                  <div class="text-base-content/60 text-xs mb-1">Used Traffic</div>
+                  <div class="font-semibold text-base">{format_traffic(item.used)}</div>
+                </div>
+                <div>
+                  <div class="text-base-content/60 text-xs mb-1">Remaining Traffic</div>
+                  <div class="font-semibold text-base">
+                    {format_traffic(item.remaining)}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="space-y-1">
-              <div class="flex justify-between text-xs text-base-content/70">
-                <span>Used {item.percent}%</span>
-                <span>{100 - item.percent}% Remaining</span>
+              <div class="space-y-1">
+                <div class="flex justify-between text-xs text-base-content/70">
+                  <span>Used {item.percent}%</span>
+                  <span>{100 - item.percent}% Remaining</span>
+                </div>
+                <progress
+                  class="progress progress-success w-full h-2"
+                  value={item.percent}
+                  max="100"
+                ></progress>
               </div>
-              <progress
-                class="progress progress-success w-full h-2"
-                value={item.percent}
-                max="100"
-              ></progress>
-            </div>
 
-            <div class="flex flex-wrap justify-between text-xs text-base-content/60 pt-2 border-t border-base-300/40">
-              <span>Expiration: {Calendar.strftime(subscription.expired_at, "%Y/%m/%d")}</span>
-              <span>Next Reset: {Calendar.strftime(item.cycle_end, "%Y/%m/%d")}</span>
+              <div class="flex flex-wrap justify-between text-xs text-base-content/60 pt-2 border-t border-base-300/40">
+                <span>Expiration: {Calendar.strftime(sub.expired_at, "%Y/%m/%d")}</span>
+                <span>Next Reset: {Calendar.strftime(item.cycle_end, "%Y/%m/%d")}</span>
+              </div>
+            </.link>
+          <% else %>
+            <div class="card bg-base-200/40 shadow-sm border border-base-300 rounded-lg p-10 text-center space-y-4 my-auto">
+              <div class="space-y-1">
+                <h3 class="font-bold text-lg text-base-content">No Available Services</h3>
+                <p class="text-xs text-base-content/60">
+                  Services expired for more than 3 days will not be shown here. You can check the records in "All Services".
+                </p>
+              </div>
+              <div>
+                <.link href={~p"/plans"} class="btn btn-warning text-warning-content px-6">
+                  Go to Shop
+                </.link>
+              </div>
             </div>
-          </.link>
+          <% end %>
         </div>
       </div>
+    </div>
 
-      <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body">
-          <h2 class="card-title text-base font-bold mb-1">Quick Actions</h2>
-          <p class="text-xs text-base-content/60 mb-3">Quick access to frequent features</p>
+    <div class="lg:col-span-1 order-2 flex flex-col">
+      <div class="card bg-base-100 shadow-sm border border-base-300 h-full flex flex-col">
+        <div class="card-body flex-1 flex flex-col justify-between">
+          <h2 class="card-title text-base font-bold mb-1">Account Overview</h2>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="w-full flex flex-row flex-wrap lg:grid lg:grid-cols-2 gap-4 items-center justify-between text-sm my-auto">
+            <div class="flex-1 min-w-[110px]">
+              <div class="text-base-content/60 text-xs mb-1">Balance</div>
+              <div class="text-lg font-bold">
+                {currency_symbol()}{format_amount(@user_balance)}
+              </div>
+              <a href={~p"/account"} class="text-xs text-warning hover:underline">Top-up</a>
+            </div>
+
+            <div class="flex-1 min-w-[110px]">
+              <div class="text-base-content/60 text-xs mb-1">Active Services</div>
+              <div class="text-lg font-bold">{length(@subs)}</div>
+              <a href={~p"/services"} class="text-xs text-warning hover:underline">Manage</a>
+            </div>
+
+            <div class="hidden lg:block divider col-span-2 my-0"></div>
+
+            <div class="flex-1 min-w-[110px]">
+              <div class="text-base-content/60 text-xs mb-1">Total Traffic</div>
+              <div class="font-bold text-base">{format_traffic(@total_remaining)}</div>
+              <div class="text-xs text-base-content/50">Sum of active services</div>
+            </div>
+
+            <div class="flex-1 min-w-[110px]">
+              <div class="text-base-content/60 text-xs mb-1">AFF Commission</div>
+              <div class="font-bold text-base">
+                {currency_symbol()}{format_amount(@commission_balance)}
+              </div>
+              <a href={~p"/affiliate"} class="text-xs hover:underline">Affiliate Center →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 order-3 flex flex-col">
+      <div class="card bg-base-100 shadow-sm border border-base-300 h-full flex flex-col">
+        <div class="card-body flex-1 flex flex-col justify-between">
+          <div>
+            <h2 class="card-title text-base font-bold mb-1">Quick Actions</h2>
+            <p class="text-xs text-base-content/60 mb-3">Quick access to frequent features</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 my-auto">
             <a
               href={~p"/knowledges"}
               class="flex items-center justify-between p-3 rounded-xl bg-base-200/40 hover:bg-base-200/80 transition border border-base-300/40"
@@ -136,63 +196,56 @@
       </div>
     </div>
 
-    <div class="space-y-6">
-      <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body">
-          <h2 class="card-title text-base font-bold mb-3">Account Overview</h2>
-
-          <div class="grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
-            <div>
-              <div class="text-base-content/60 text-xs mb-1">Balance</div>
-              <div class="text-lg font-bold">
-                {currency_symbol()}{format_amount(@user_balance)}
-              </div>
-              <a href={~p"/account"} class="text-xs text-warning hover:underline">Top-up</a>
-            </div>
-
-            <div>
-              <div class="text-base-content/60 text-xs mb-1">Active Services</div>
-              <div class="text-lg font-bold">{length(@subscriptions)}</div>
-              <a href={~p"/services"} class="text-xs text-warning hover:underline">Manage</a>
-            </div>
-
-            <div class="divider col-span-2 my-0"></div>
-
-            <div>
-              <div class="text-base-content/60 text-xs mb-1">Total Traffic</div>
-              <div class="font-bold text-base">{format_traffic(@total_remaining)}</div>
-              <div class="text-xs text-base-content/50">Sum of active services</div>
-            </div>
-
-            <div>
-              <div class="text-base-content/60 text-xs mb-1">AFF Commission</div>
-              <div class="font-bold text-base">
-                {currency_symbol()}{format_amount(@commission_balance)}
-              </div>
-              <a href={~p"/affiliate"} class="text-xs hover:underline">Affiliate Center →</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card bg-base-100 shadow-sm border border-base-300">
-        <div class="card-body">
-          <h2 class="card-title text-base font-bold mb-1">Daily Bonus</h2>
-          <p class="text-xs text-base-content/60 mb-4">Check-in for extra traffic</p>
-
-          <div class="flex items-center justify-between bg-base-200/40 p-4 rounded-xl border border-base-300/40 mb-3">
-            <div>
-              <div class="text-sm font-semibold">Lucky Draw</div>
-              <div class="text-xs text-base-content/60 mt-0.5">Today 90 · 1–1024 MiB</div>
-            </div>
-            <button class="btn btn-warning text-warning-content btn-sm px-6">Check-in</button>
+    <div class="lg:col-span-1 order-4 flex flex-col">
+      <div class="card bg-base-100 shadow-sm border border-base-300 h-full flex flex-col">
+        <div class="card-body flex-1 flex flex-col justify-between">
+          <div>
+            <h2 class="card-title text-base font-bold mb-1">Daily Bonus</h2>
+            <p class="text-xs text-base-content/60 mb-4">Check-in for extra traffic</p>
           </div>
 
-          <p class="text-xs text-base-content/60 leading-relaxed">
-            Check-in to randomly win traffic rewards, valid only for the current billing cycle.
-          </p>
+          <div class="space-y-3 my-auto">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm font-semibold text-base-content">Lucky Draw</div>
+                <div class="text-xs text-base-content/60 mt-0.5">
+                  <span class="font-medium text-base-content">{@checkin_today_count}</span>
+                  checked in today · 1–1024 MB
+                </div>
+              </div>
+              <div>
+                <%= if @checkin_today == nil do %>
+                  <a
+                    id="btn-user-checkin"
+                    class="btn btn-warning text-warning-content btn-sm px-6 font-medium"
+                    data-endpoint={~p"/check-ins"}
+                  >
+                    Check In
+                  </a>
+                <% end %>
+              </div>
+            </div>
 
-          <div class="mt-2 pt-3 border-t border-base-300/40 text-xs">
+            <%= if @checkin_today == nil do %>
+              <p class="text-xs text-base-content/60 leading-relaxed">
+                Check-in to randomly win traffic rewards, valid only for the current billing cycle.
+              </p>
+            <% else %>
+              <div class="bg-success/10 border border-success/20 px-4 py-3 rounded-xl flex items-center justify-between text-xs">
+                <div class="font-semibold text-success flex items-center gap-1.5">
+                  <span>Checked in</span>
+                </div>
+                <div class="text-base-content/70">
+                  Claimed
+                  <span class="font-bold text-success">{format_traffic(
+                    @checkin_today.traffic_amount
+                  )}</span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="pt-3 border-t border-base-300/40 text-xs mt-3">
             <span class="text-base-content/60">Having trouble?</span>
             <a href={~p"/knowledges"} class="text-warning font-medium hover:underline ml-1">Help Center →</a>
           </div>
@@ -201,3 +254,32 @@
     </div>
   </div>
 </div>
+
+<script type="module">
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('btn-user-checkin')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      try {
+        const url = e.currentTarget.dataset.endpoint;
+        const csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content") || "";
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+        });
+
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else {
+          window.location.reload();
+        }
+      } catch(err) {
+        console.error("Failed to do user check-in:", err);
+      }
+    });
+  });
+</script>

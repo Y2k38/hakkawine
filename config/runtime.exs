@@ -173,3 +173,11 @@ config :hakkawine, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
 config :hakkawine, :rate_limiter,
   enabled: System.get_env("RATE_LIMITER_ENABLED", "true") in ["true", "1"]
+
+config :hakkawine, :geoip,
+  enabled: System.get_env("GEOIP_ENABLED", "true") in ["true", "1"],
+  license_key: System.get_env("GEOIP_LICENSE_KEY"),
+  database_dir:
+    System.get_env("GEOIP_DATABASE_DIR") ||
+      Path.join([Application.app_dir(:myapp), "priv", "geoip"]),
+  auto_download: System.get_env("GEOIP_AUTO_DOWNLOAD", "false") in ["true", "1"]

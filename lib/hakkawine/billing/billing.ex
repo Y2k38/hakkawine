@@ -1,6 +1,7 @@
 defmodule Hakkawine.Billing do
   import Ecto.Query
 
+  alias Hakkawine.Billing.TopupRule
   alias Ecto.Multi
   alias Hakkawine.Repo
   alias Hakkawine.Catalog
@@ -14,6 +15,22 @@ defmodule Hakkawine.Billing do
   alias Hakkawine.Billing.PaymentMethod
   alias Hakkawine.Billing.Workers.ExpireOrder
   alias Hakkawine.Billing.Workers.CreateSubscription
+
+  defp get_order_base(order_id) do
+    Order
+    |> where(id: ^order_id)
+  end
+
+  def get_order(order_id) do
+    get_order_base(order_id)
+    |> Repo.one()
+  end
+
+  def get_locked_order(order_id) do
+    get_order_base(order_id)
+    |> lock("FOR UPDATE")
+    |> Repo.one()
+  end
 
   def create_order(user, params \\ %{}) do
     with {:ok, form} <- CheckoutForm.parse(params),
@@ -221,5 +238,35 @@ defmodule Hakkawine.Billing do
         "user_id" => order.user_id
       })
     end)
+  end
+
+  def validate_topup_rules(rules) when is_list(rules) do
+    sorted = Enum.sort_by(rules, & &1.min_amount, Decimal)
+
+    has_error? =
+      Enum.chunk_every(sorted, 2, 1, :discard)
+      |> Enum.any?(fn [prev, curr] ->
+        cond do
+          is_nil(prev.max_amount) ->
+            true
+
+          Decimal.compare(curr.min_amount, prev.max_mount) != :eq ->
+            true
+
+          true ->
+            false
+        end
+      end)
+
+    if has_error? do
+      {:error, :min_amount_overlap}
+    else
+      :ok
+    end
+  end
+
+  def fetch_all_topup_rules() do
+    from(r in TopupRule, order_by: [asc: r.min_amount])
+    |> Repo.all()
   end
 end

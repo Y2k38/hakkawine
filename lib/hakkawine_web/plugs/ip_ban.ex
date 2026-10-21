@@ -4,12 +4,14 @@ defmodule HakkawineWeb.Plugs.IpBan do
   import Plug.Conn
   import Phoenix.Controller
 
+  alias Hakkawine.Utils.RequestHelpers
+
   @window_seconds 60
   @max_404_count 10
   @ban_ttl_seconds 3600
 
   def block_banned(conn, _opts) do
-    ip = get_client_ip(conn)
+    ip = RequestHelpers.get_client_ip(conn)
 
     case Redix.command(:redix, ["EXISTS", "ban:ip:#{ip}"]) do
       {:ok, 1} ->
@@ -24,7 +26,7 @@ defmodule HakkawineWeb.Plugs.IpBan do
   end
 
   def track_404(conn, _opts) do
-    ip = get_client_ip(conn)
+    ip = RequestHelpers.get_client_ip(conn)
     counter_key = "counter:404:ip:#{ip}"
 
     case Redix.transaction(:redix, [
@@ -40,16 +42,6 @@ defmodule HakkawineWeb.Plugs.IpBan do
     end
 
     conn
-  end
-
-  defp get_client_ip(conn) do
-    case get_req_header(conn, "x-forwarded-for") do
-      [ip_list | _] ->
-        ip_list |> String.split(",") |> List.first() |> String.trim()
-
-      [] ->
-        conn.remote_ip |> :inet.ntoa() |> to_string()
-    end
   end
 
   defp render_banned(conn, ip) do

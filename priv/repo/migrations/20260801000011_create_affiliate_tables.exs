@@ -14,7 +14,6 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -36,7 +35,6 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -55,7 +53,6 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -75,13 +72,14 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         updated_at: false,
         default: fragment("NOW()")
       )
     end
 
-    create index(:commission_logs, [:user_id, "created_at DESC"], name: :idx_commission_logs_user)
+    create index(:commission_logs, [:user_id, "inserted_at DESC"],
+             name: :idx_commission_logs_user
+           )
 
     create table(:payout_methods, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
@@ -99,7 +97,6 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -119,7 +116,6 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -146,7 +142,6 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -155,11 +150,11 @@ defmodule Hakkawine.Repo.Migrations.CreateAffiliateTables do
 
     create index(:withdrawal_records, [:user_id, :status], name: :idx_withdrawals_user)
 
-    create index(:withdrawal_records, [:created_at], name: :idx_withdrawals_created_at)
+    create index(:withdrawal_records, [:inserted_at], name: :idx_withdrawals_inserted_at)
   end
 
   def down do
-    drop_if_exists index(:withdrawal_records, name: :idx_withdrawals_created_at)
+    drop_if_exists index(:withdrawal_records, name: :idx_withdrawals_inserted_at)
     drop_if_exists index(:withdrawal_records, name: :idx_withdrawals_user)
     drop_if_exists index(:withdrawal_records, name: :uk_withdrawal_records_sn)
     drop_if_exists index(:payout_methods, name: :uk_payout_methods_code)

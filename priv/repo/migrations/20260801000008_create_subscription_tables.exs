@@ -24,7 +24,6 @@ defmodule Hakkawine.Repo.Migrations.CreateSubscriptionTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end
@@ -52,7 +51,6 @@ defmodule Hakkawine.Repo.Migrations.CreateSubscriptionTables do
 
       timestamps(
         type: :timestamptz,
-        inserted_at: :created_at,
         default: fragment("NOW()")
       )
     end

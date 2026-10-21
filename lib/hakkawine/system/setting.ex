@@ -13,10 +13,7 @@ defmodule Hakkawine.System.Setting do
     field :value, JSONValue
     field :description, :string
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

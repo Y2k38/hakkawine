@@ -13,10 +13,7 @@ defmodule Hakkawine.Agents.AgentAllocation do
 
     embeds_one :proxy_config, Hakkawine.ProxyDrivers.Config, on_replace: :update
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

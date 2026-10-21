@@ -1,0 +1,169 @@
+<div class="card bg-base-100 shadow-sm border border-base-300 flex flex-col justify-between">
+  <div class="card-body space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="text-xs text-base-content/60 mb-1">Current Balance</div>
+        <div class="text-3xl font-extrabold text-warning">
+          {currency_symbol()}{format_amount(@user_balance)}
+        </div>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="text-xs font-mono text-base-content/70">{@current_user &&
+            @current_user.email}</span>
+          <span class="badge badge-success badge-sm text-success-content text-[10px] px-2 py-0.5">Verified</span>
+        </div>
+      </div>
+      <button
+        class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+        phx-click="open_modal"
+        phx-value-modal="balance_logs"
+        phx-value-title="Balance History"
+        phx-target={@myself}
+      >
+        Balance History
+      </button>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <button
+        class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+        phx-click="open_modal"
+        phx-value-modal="change_email"
+        phx-value-title="Change Email"
+        phx-target={@myself}
+      >
+        Change Email
+      </button>
+      <button
+        class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+        phx-click="open_modal"
+        phx-value-modal="change_pass"
+        phx-value-title="Change Password"
+        phx-target={@myself}
+      >
+        Change Password
+      </button>
+      <button
+        class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+        phx-click="open_modal"
+        phx-value-modal="session_list"
+        phx-value-title="Logged-in Devices"
+        phx-target={@myself}
+      >
+        Logged-in Devices
+      </button>
+
+      <div class={["modal", @show_modal && "modal-open"]}>
+        <div class="modal-box relative w-11/12 max-w-2xl">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+            phx-click="close_modal"
+            phx-target={@myself}
+          >✕</button>
+
+          <h3 class="font-bold text-lg">{@modal_title}</h3>
+
+          <div class="py-4">
+            <%= case @active_modal do %>
+              <% "balance_logs" -> %>
+                balance_logs
+              <% "change_email" -> %>
+                change_email
+              <% "change_pass" -> %>
+                change_pass
+              <% "session_list" -> %>
+                <div class="space-y-4">
+                  <p class="text-sm text-base-content/70">
+                    Here are your active login sessions. Recent activity does not necessarily mean the device is currently online; a single device may have multiple sessions.
+                  </p>
+
+                  <%= for session <- @session_list do %>
+                    <% is_current = session["session_id"] == @session_id %>
+
+                    <div class={[
+                      "card border p-4 rounded-xl",
+                      is_current && "bg-base-200/60 border-base-300",
+                      !is_current && "bg-base-100 border-base-200"
+                    ]}>
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-base">{get_in(session, [
+                          "metadata",
+                          "ua",
+                          "browser"
+                        ]) || "Unknown Browser"}</span>
+                        <%= if is_current do %>
+                          <span class="badge badge-success badge-sm text-success-content font-medium">Current</span>
+                        <% end %>
+                      </div>
+
+                      <p class="text-xs text-base-content/70 mb-3">
+                        {get_in(session, ["metadata", "ua", "device"]) || "Unknown Device"} · {get_in(
+                          session,
+                          ["metadata", "ua", "os"]
+                        ) || "Unknown OS"} · {get_in(session, ["user_agent"])}
+                      </p>
+
+                      <div class="flex justify-between items-end">
+                        <div>
+                          <div class="text-sm font-medium">{get_in(session, ["ip_address"])}</div>
+                          <div class="text-xs text-base-content/60">
+                            {get_in(session, ["metadata", "ip", "country"]) || "Unknown Country"} · {get_in(
+                              session,
+                              ["ip", "asn"]
+                            ) || "Unknown ASN"}
+                          </div>
+                        </div>
+
+                        <button
+                          class="btn btn-ghost btn-xs text-error hover:bg-error/10"
+                          phx-click="logout_session"
+                          phx-target={@myself}
+                          phx-value-session_id={session["session_id"]}
+                        >
+                          Log out
+                        </button>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+
+                <div class="modal-action flex justify-between items-center mt-6">
+                  <button
+                    class="btn btn-ghost btn-sm text-error hover:bg-error/10 pl-0"
+                    phx-click="logout_other_sessions"
+                    phx-target={@myself}
+                  >
+                    Log out all other devices
+                  </button>
+
+                  <button
+                    class="btn btn-primary px-6"
+                    phx-click="close_modal"
+                    phx-target={@myself}
+                  >
+                    Done
+                  </button>
+                </div>
+              <% nil -> %>
+                <div></div>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="modal-backdrop" phx-click="close_modal" phx-target={@myself}></div>
+      </div>
+    </div>
+    <p class="text-xs text-base-content/60 leading-relaxed">
+      Balance can be used to buy plans, renewals, and add-on traffic, with no extra transaction fees.
+    </p>
+  </div>
+
+  <div class="p-6 pt-0 flex justify-end">
+    <.link
+      href={~p"/auth/log_out"}
+      method="delete"
+      class="btn btn-sm btn-error text-error-content px-6"
+    >
+      Log Out
+    </.link>
+  </div>
+</div>

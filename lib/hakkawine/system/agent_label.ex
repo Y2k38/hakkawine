@@ -10,10 +10,7 @@ defmodule Hakkawine.System.AgentLabel do
     field :name, :string
     field :is_enabled, :string
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-base-200 text-base-content flex flex-col">
+<div class="min-h-screen min-w-[320px] bg-base-200 text-base-content flex flex-col overflow-x-auto">
   <header class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -30,12 +30,11 @@
             <li><a href={~p"/announcements"}>Announcements</a></li>
             <li><a href={~p"/affiliate"}>Affiliate</a></li>
             <li><a href={~p"/services"}>My Services</a></li>
-            <li><a href={~p"/more"}>More</a></li>
           </ul>
         </div>
 
         <a href={~p"/home"} class="font-bold text-lg tracking-wider">
-          HAKKAWINE
+          Hakkawine
         </a>
 
         <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
@@ -87,40 +86,24 @@
         </nav>
       </div>
 
-      <div class="flex items-center gap-2 md:gap-3">
+      <div class="flex items-center gap-2">
         <Layouts.theme_toggle_vertical />
 
-        <div class="dropdown dropdown-end">
-          <div
-            tabindex="0"
-            role="button"
-            class="text-sm font-semibold cursor-pointer flex items-center gap-1 px-3 py-2 rounded-lg hover:bg-base-200 transition-colors"
+        <div>
+          <.link
+            href={~p"/account"}
+            class="btn btn-sm btn-outline font-semibold normal-case border-base-300"
           >
-            <span>{(assigns[:current_user] && assigns[:current_user].email) || "Account"}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4 opacity-60"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-          <ul
-            tabindex="0"
-            class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-56 mt-2 border border-base-300"
-          >
-            <li><a href={~p"/account"}>My Account</a></li>
-            <li>
-              <.link href={~p"/auth/log_out"} method="delete" class="text-error">Log Out</.link>
-            </li>
-          </ul>
+            <% text = (@current_user && @current_user.email) || "Account" %>
+
+            <span class="sm:hidden">
+              {String.first(text)}
+            </span>
+
+            <span class="hidden sm:inline">
+              {text}
+            </span>
+          </.link>
         </div>
       </div>
     </div>

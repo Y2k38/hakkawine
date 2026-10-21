@@ -27,10 +27,7 @@ defmodule Hakkawine.Catalog.Product do
 
     has_many :plan_slots, PlanSlot, foreign_key: :product_id, on_replace: :delete_if_exists
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

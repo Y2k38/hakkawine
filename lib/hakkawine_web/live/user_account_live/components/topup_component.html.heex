@@ -1,0 +1,71 @@
+<div class="card bg-base-100 shadow-sm border border-base-300 flex flex-col justify-between">
+  <div class="card-body space-y-5">
+    <h2 class="card-title text-base font-bold">Top-up Balance</h2>
+
+    <div class="grid grid-cols-5 gap-2">
+      <%= for rule <- @topup_rules do %>
+        <% is_active? = Decimal.compare(@custom_amount, rule.min_amount) == :eq %>
+        <button
+          type="button"
+          phx-click="select_preset_amount"
+          phx-value-amount={rule.min_amount}
+          phx-target={@myself}
+          class={[
+            "btn btn-sm font-semibold transition-all",
+            is_active? && "btn-warning text-warning-content shadow-md",
+            !is_active? && "btn-ghost bg-base-200/60 font-normal hover:bg-base-200"
+          ]}
+        >
+          {currency_symbol()}{format_amount(rule.min_amount)}
+        </button>
+      <% end %>
+    </div>
+
+    <% is_below_lowest? = Decimal.lt?(@custom_amount, @lowest_amount) %>
+
+    <div class="space-y-2">
+      <label class="text-xs text-base-content/60">Custom Amount (Integer)</label>
+      <div class="flex items-center input input-bordered input-sm w-full bg-base-200/40 px-3 h-10">
+        <span class="text-base-content/70 font-semibold mr-1 select-none">{currency_symbol()}</span>
+        <input
+          type="text"
+          inputmode="numeric"
+          name="balance_amount"
+          value={format_amount(@custom_amount)}
+          phx-keyup="update_custom_amount"
+          phx-debounce="500"
+          phx-target={@myself}
+          class="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-sm font-semibold p-0"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="p-6 pt-0 flex items-end justify-between gap-4">
+    <div class="text-xs text-base-content/60 space-y-0.5">
+      <%= if !is_below_lowest? do %>
+        <div>Pay {currency_symbol()}{format_amount(@custom_amount)}</div>
+        <%= if Decimal.eq?(@bonus_amount, 0) do %>
+          <div>Current amount gets no bonus</div>
+        <% else %>
+          <div class="text-success font-medium">
+            Bonus {currency_symbol()}{format_amount(@bonus_amount)}, total {currency_symbol()}{format_amount(
+              @total_arrived
+            )}
+          </div>
+        <% end %>
+      <% else %>
+        <div>
+          Minimum top-up: {currency_symbol()}{format_amount(@lowest_amount)} (whole numbers only)
+        </div>
+      <% end %>
+    </div>
+
+    <button
+      class="btn btn-warning text-warning-content btn-sm px-6"
+      disabled={is_below_lowest?}
+    >
+      Top-up Now
+    </button>
+  </div>
+</div>

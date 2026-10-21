@@ -1,0 +1,57 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between">
+    <h2 class="text-lg font-bold">Billing Records</h2>
+    <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">Refresh</button>
+  </div>
+
+  <div class="card bg-base-100 shadow-sm border border-base-300">
+    <div class="card-body p-0">
+      <div class="overflow-x-auto">
+        <table class="table w-full text-sm">
+          <thead>
+            <tr class="text-xs text-base-content/60 border-b border-base-300/60">
+              <th class="py-4 px-6">Order</th>
+              <th class="py-4 px-6">Product / Service</th>
+              <th class="py-4 px-6">Type</th>
+              <th class="py-4 px-6">Amount</th>
+              <th class="py-4 px-6">Gateway</th>
+              <th class="py-4 px-6">Status</th>
+              <th class="py-4 px-6">Created At</th>
+              <th class="py-4 px-6 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-base-300/40 hover:bg-base-200/30">
+              <td class="py-4 px-6 font-mono text-xs">#3911</td>
+              <td class="py-4 px-6">
+                <div class="font-semibold text-sm">Upgrade Plan</div>
+                <div class="text-xs text-base-content/50 font-mono">Service ID #373398</div>
+              </td>
+              <td class="py-4 px-6">Upgrade Plan</td>
+              <td class="py-4 px-6 font-semibold">¥32.39</td>
+              <td class="py-4 px-6">Balance</td>
+              <td class="py-4 px-6">
+                <span class="text-success font-medium">Paid</span>
+              </td>
+              <td class="py-4 px-6 text-xs text-base-content/70">2026/9/4 14:40:06</td>
+              <td class="py-4 px-6 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal">Details</button>
+                  <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal">Download PDF</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between text-xs text-base-content/60 pt-2">
+    <div>Total 1 item · Page 1</div>
+    <div class="flex gap-2">
+      <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal" disabled>Previous</button>
+      <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal" disabled>Next</button>
+    </div>
+  </div>
+</div>

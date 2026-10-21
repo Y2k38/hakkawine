@@ -8,10 +8,7 @@ defmodule Hakkawine.Agents.OBFSDomain do
     field :domain, :string
     field :is_blocked, :boolean
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

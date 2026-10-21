@@ -14,10 +14,7 @@ defmodule Hakkawine.System.Template do
     field :match_rules, JSONValue
     field :content, :string
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   @doc false

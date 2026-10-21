@@ -83,8 +83,8 @@ defmodule Hakkawine.MixProject do
       {:dotenvy, "~> 1.0", only: [:dev]},
       {:oban, "~> 2.23"},
       {:igniter, "~> 0.5", only: [:dev]},
-      {:yaml_elixir, "~> 2.12"},
-      {:ymlr, "~> 5.1"}
+      {:ua_parser, "~> 1.8"},
+      {:locus, "~> 2.3"}
     ]
   end
 
@@ -101,13 +101,41 @@ defmodule Hakkawine.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["compile", "tailwind hakkawine", "esbuild hakkawine"],
+      "assets.build": [
+        "compile",
+        "tailwind hakkawine",
+        "esbuild hakkawine",
+        &copy_vendor_js/1
+      ],
       "assets.deploy": [
         "tailwind hakkawine --minify",
         "esbuild hakkawine --minify",
+        &copy_vendor_js/1,
         "phx.digest"
       ],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
     ]
+  end
+
+  def copy_vendor_js(_args \\ nil) do
+    js_files = [
+      "echarts.min.js"
+    ]
+
+    source_dir = "assets/vendor"
+    target_dir = "priv/static/assets/js"
+
+    File.mkdir_p!(target_dir)
+
+    Enum.each(js_files, fn filename ->
+      source = Path.join(source_dir, filename)
+      target = Path.join(target_dir, filename)
+
+      if File.exists?(source) do
+        File.cp!(source, target)
+      else
+        IO.puts("[Vendor Sync] Warning: Vendor JS file not found -> #{source}")
+      end
+    end)
   end
 end

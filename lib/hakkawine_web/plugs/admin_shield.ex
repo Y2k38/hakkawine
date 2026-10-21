@@ -1,6 +1,8 @@
 defmodule HakkawineWeb.Plugs.AdminShield do
   import Plug.Conn
 
+  alias Hakkawine.System
+
   @internal_prefix "/__internal_system_admin_panel__"
 
   def init(opts), do: opts

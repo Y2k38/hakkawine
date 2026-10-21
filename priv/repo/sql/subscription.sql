@@ -17,7 +17,7 @@ CREATE TABLE user_subscriptions (
     extra_quota_bytes bigint NOT NULL DEFAULT 0,
     started_at timestamptz NOT NULL DEFAULT NOW(),
     expired_at timestamptz NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT NOW(),
+    inserted_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -36,7 +36,7 @@ CREATE TABLE proxy_templates (
     format varchar(64) NOT NULL, -- yaml/json
     content text NOT NULL,
     is_active boolean NOT NULL DEFAULT FALSE,
-    created_at timestamptz NOT NULL DEFAULT NOW(),
+    inserted_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 

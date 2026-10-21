@@ -35,8 +35,11 @@ hakkawine-*.tar
 npm-debug.log
 /assets/node_modules/
 
-.venv
-
 .vscode
 .elixir_ls/
+
+.venv
+
 .env
+
+*.mmdb

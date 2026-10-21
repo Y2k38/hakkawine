@@ -88,7 +88,9 @@ defmodule HakkawineWeb do
       import Phoenix.HTML
       # Core UI components
       import HakkawineWeb.CoreComponents
-      import HakkawineWeb.FormatHelpers
+      import HakkawineWeb.Helpers.NumberHelper
+      import HakkawineWeb.Helpers.DateHelper
+      import HakkawineWeb.Helpers.StatusHelper
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

@@ -1,0 +1,23 @@
+<div class="space-y-4">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+    <.live_component
+      module={HakkawineWeb.UserAccountLive.Components.AccountComponent}
+      id="account-widget"
+      user_id={@user_id}
+      session_id={@session_id}
+      current_user={@current_user}
+      user_balance={@user_balance}
+    />
+
+    <.live_component
+      module={HakkawineWeb.UserAccountLive.Components.TopupComponent}
+      id="topup-widget"
+      topup_rules={@topup_rules}
+    />
+  </div>
+
+  <.live_component
+    module={HakkawineWeb.UserAccountLive.Components.TelegramComponent}
+    id="telegram-widget"
+  />
+</div>

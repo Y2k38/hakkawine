@@ -31,14 +31,9 @@ defmodule Hakkawine.Accounts.UserAccount do
     field :captcha_token, :string, virtual: true
     field :token, :string, virtual: true
     # Honeypot field
-    field :phone_number, :string, virtual: true
-    # invited_by
-    field :aff, :string, virtual: true
+    field :company_name, :string, virtual: true
 
-    timestamps(
-      type: :utc_datetime_usec,
-      inserted_at: :created_at
-    )
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(user_account, attrs) do
@@ -47,7 +42,6 @@ defmodule Hakkawine.Accounts.UserAccount do
       :account_type,
       :status,
       :email,
-      :aff,
       :password,
       :email_verified_at,
       :password_updated_at
@@ -94,7 +88,7 @@ defmodule Hakkawine.Accounts.UserAccount do
 
   def registration_changeset(user_account, attrs) do
     user_account
-    |> cast(attrs, [:email, :password, :verification_code, :phone_number])
+    |> cast(attrs, [:email, :password, :verification_code, :company_name])
     |> validate_required([:email, :password, :verification_code])
     |> validate_honeypot()
     |> normalize_email()
@@ -146,10 +140,10 @@ defmodule Hakkawine.Accounts.UserAccount do
   end
 
   defp validate_honeypot(changeset) do
-    case get_change(changeset, :phone_number) do
+    case get_change(changeset, :company_name) do
       nil -> changeset
       "" -> changeset
-      _bot_input -> add_error(changeset, :phone_number, "Bot detected")
+      _bot_input -> add_error(changeset, :company_name, "Bot detected")
     end
   end
 

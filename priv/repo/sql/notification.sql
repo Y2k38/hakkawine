@@ -47,7 +47,7 @@ CREATE TABLE message_templates (
     subject varchar(255),
     content text NOT NULL,
     is_enable boolean NOT NULL DEFAULT TRUE,
-    created_at timestamptz NOT NULL DEFAULT NOW(),
+    inserted_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -64,12 +64,12 @@ CREATE TABLE user_notifications (
     is_urgent boolean NOT NULL DEFAULT FALSE,
     is_read boolean NOT NULL DEFAULT FALSE,
     expired_at timestamptz,
-    created_at timestamptz NOT NULL DEFAULT NOW()
+    inserted_at timestamptz NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_user_notifications_user_unread ON user_notifications (user_id, is_read, created_at DESC) WHERE user_id > 0;
+CREATE INDEX idx_user_notifications_user_unread ON user_notifications (user_id, is_read, inserted_at DESC) WHERE user_id > 0;
 
-CREATE INDEX idx_user_notifications_broadcast ON user_notifications (created_at DESC) WHERE user_id = 0;
+CREATE INDEX idx_user_notifications_broadcast ON user_notifications (inserted_at DESC) WHERE user_id = 0;
 
 CREATE TABLE user_read_announcements (
     user_id bigint NOT NULL,
@@ -89,8 +89,8 @@ CREATE TABLE notification_logs (
     status varchar(32) NOT NULL DEFAULT 'pending',
     error_reason text,
     sent_at timestamptz,
-    created_at timestamptz NOT NULL DEFAULT NOW()
+    inserted_at timestamptz NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_notification_logs_user_time ON notification_logs (user_id, created_at DESC);
-CREATE INDEX idx_notification_logs_pending ON notification_logs (status, created_at) WHERE status = 'pending';
+CREATE INDEX idx_notification_logs_user_time ON notification_logs (user_id, inserted_at DESC);
+CREATE INDEX idx_notification_logs_pending ON notification_logs (status, inserted_at) WHERE status = 'pending';

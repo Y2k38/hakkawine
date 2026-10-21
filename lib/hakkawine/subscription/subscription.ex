@@ -44,9 +44,10 @@ defmodule Hakkawine.Subscription do
     |> Repo.one()
   end
 
-  def get_by_id(id) do
+  def get_for_user(user_id, sub_id) do
     UserSubscription
-    |> where(id: ^id)
+    |> where(user_id: ^user_id)
+    |> where(id: ^sub_id)
     |> Repo.one()
   end
 
@@ -57,7 +58,7 @@ defmodule Hakkawine.Subscription do
     |> Repo.one()
   end
 
-  def get_recurring_subscription_by_user_id(user_id) do
+  def get_active_recurring_subscription(user_id) do
     UserSubscription
     |> where([sub], sub.user_id == ^user_id)
     |> where([sub], sub.billing_cycle != :one_time)
@@ -65,17 +66,19 @@ defmodule Hakkawine.Subscription do
     |> Repo.one()
   end
 
-  def list_active_subscriptions(user_id) do
+  def list_valid_subscriptions(user_id) do
+    three_days_ago = DateTime.utc_now() |> DateTime.add(-3, :day)
+
     UserSubscription
     |> where([sub], sub.user_id == ^user_id)
-    |> where([sub], sub.status == :active)
+    |> where([sub], sub.expired_at >= ^three_days_ago)
     |> Repo.all()
   end
 
   def list_history_subscriptions(user_id) do
     UserSubscription
     |> where([sub], sub.user_id == ^user_id)
-    |> order_by([sub], desc: sub.created_at)
+    |> order_by([sub], desc: sub.inserted_at)
     |> Repo.all()
   end
 
@@ -83,12 +86,12 @@ defmodule Hakkawine.Subscription do
     Date.diff(DateTime.to_date(expired_at), DateTime.to_date(from_datetime))
   end
 
-  defp compute_periodic_window(%DateTime{} = now, billing_day) do
+  defp compute_periodic_window(%DateTime{} = now, billing_day, type \\ :subscription) do
     current_date = DateTime.to_date(now)
 
     current_month_billing_date = safe_date(current_date.year, current_date.month, billing_day)
 
-    {start_date, end_date} =
+    {start_date, full_end_date} =
       if Date.compare(current_date, current_month_billing_date) != :lt do
         start_d = current_month_billing_date
 
@@ -105,9 +108,19 @@ defmodule Hakkawine.Subscription do
         {start_d, end_d}
       end
 
+    {end_date, end_time} =
+      case type do
+        :stats ->
+          tomorrow = Date.shift(current_date, day: 1)
+          {tomorrow, ~T[00:00:00]}
+
+        :subscription ->
+          {full_end_date, ~T[00:00:00]}
+      end
+
     {
       DateTime.new!(start_date, ~T[00:00:00], "Etc/UTC"),
-      DateTime.new!(end_date, ~T[00:00:00], "Etc/UTC")
+      DateTime.new!(end_date, end_time, "Etc/UTC")
     }
   end
 
@@ -121,17 +134,17 @@ defmodule Hakkawine.Subscription do
     Date.new!(year, month, day)
   end
 
-  def calculate_current_billing_window(subscription) do
-    if subscription.billing_cycle == :one_time do
-      {subscription.started_at, subscription.expired_at}
+  def calculate_current_billing_window(sub, type \\ :subscription) do
+    if sub.billing_cycle == :one_time do
+      {sub.started_at, sub.expired_at}
     else
       now = DateTime.utc_now()
-      compute_periodic_window(now, subscription.billing_day)
+      compute_periodic_window(now, sub.billing_day, type)
     end
   end
 
   def billing_summary(%UserSubscription{} = sub) do
-    {cycle_start, cycle_end} = calculate_current_billing_window(sub)
+    {cycle_start, cycle_end} = calculate_current_billing_window(sub, :subscription)
 
     %{up: up, down: down} =
       Stats.get_subscription_summary_by_window(sub.id, cycle_start, cycle_end)
@@ -154,16 +167,16 @@ defmodule Hakkawine.Subscription do
     }
   end
 
-  def build_userinfo(%UserSubscription{} = subscription) do
-    period_start = calculate_period_start(subscription)
+  def build_userinfo(%UserSubscription{} = sub) do
+    period_start = calculate_period_start(sub)
 
-    traffic = Stats.get_subscription_traffic(subscription.id, period_start)
+    summary = Stats.get_subscription_traffic_summary(sub.id, period_start)
 
-    total_bytes = subscription.snap_base_quota_bytes + subscription.extra_quota_bytes
+    total_bytes = sub.snap_base_quota_bytes + sub.extra_quota_bytes
 
-    expire_timestamp = DateTime.to_unix(subscription.expired_at)
+    expire_timestamp = DateTime.to_unix(sub.expired_at)
 
-    "upload=#{traffic.up}; download=#{traffic.down}; total=#{total_bytes}; expire=#{expire_timestamp}"
+    "upload=#{summary.up}; download=#{summary.down}; total=#{total_bytes}; expire=#{expire_timestamp}"
   end
 
   defp calculate_period_start(%UserSubscription{
@@ -202,13 +215,13 @@ defmodule Hakkawine.Subscription do
   defp prev_month(year, 1), do: {year - 1, 12}
   defp prev_month(year, month), do: {year, month - 1}
 
-  def build_profile(scope, target, %UserSubscription{} = subscription) do
-    subscription = Repo.preload(subscription, [:agent_allocations, product: :plan_slots])
+  def build_profile(scope, target, %UserSubscription{} = sub) do
+    sub = Repo.preload(sub, [:agent_allocations, product: :plan_slots])
 
     site_name = System.get_setting("site_name", "Hakkawine")
-    filename = "#{site_name}-#{subscription.product.name}"
+    filename = "#{site_name}-#{sub.product.name}"
 
-    with proxies = ProxyDrivers.build_proxies(scope, target, subscription),
+    with proxies = ProxyDrivers.build_proxies(scope, target, sub),
          tpl = get_template(scope, target),
          content = inject_proxies_into_template(target, tpl.content, proxies) do
       Profile.new(%{
@@ -233,9 +246,9 @@ defmodule Hakkawine.Subscription do
 
   defp inject_proxies_into_template(:clash, template_str, proxies) do
     template_str
-    |> YamlElixir.read_from_string!()
-    |> Map.put("proxies", proxies)
-    |> Ymlr.document!()
+    # |> YamlElixir.read_from_string!()
+    # |> Map.put("proxies", proxies)
+    # |> Ymlr.document!()
   end
 
   defp inject_proxies_into_template(_target, _template_str, proxies) do
@@ -250,5 +263,13 @@ defmodule Hakkawine.Subscription do
       "json" -> "application/json"
       _conf -> "text/plain"
     end
+  end
+
+  def assign_extra_traffic(sub, traffic_in_bytes) do
+    new_extra_quota = (sub.extra_quota_bytes || 0) + traffic_in_bytes
+
+    sub
+    |> UserSubscription.extra_traffic_changeset(%{extra_quota_bytes: new_extra_quota})
+    |> Repo.update()
   end
 end

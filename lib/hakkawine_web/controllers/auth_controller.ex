@@ -1,7 +1,9 @@
 defmodule HakkawineWeb.AuthController do
   use HakkawineWeb, :controller
 
+  alias Hakkawine.Utils.RequestHelpers
   alias Hakkawine.System
+  alias Hakkawine.Sessions
   alias Hakkawine.Accounts
   alias Hakkawine.Accounts.UserAccount
   alias HakkawineWeb.Plugs.RedisRateLimiter
@@ -85,10 +87,13 @@ defmodule HakkawineWeb.AuthController do
   end
 
   def register(conn, %{"user_account" => user_account_params}) do
+    # affid = conn.cookies["affid"]
+
     case Accounts.create_customer(user_account_params) do
       {:ok, _user_account} ->
         conn
         |> put_status(:created)
+        # |> delete_resp_cookie("affid")
         |> render(:register_success)
 
       :deny ->
@@ -137,36 +142,52 @@ defmodule HakkawineWeb.AuthController do
   end
 
   def log_in(conn, %{"user_account" => user_account_params}) do
-    case Accounts.login(user_account_params) do
-      {:ok, user} ->
-        ts = if user.password_updated_at, do: DateTime.to_unix(user.password_updated_at), else: 0
+    client_ip = RequestHelpers.get_client_ip(conn)
+    user_agent = get_req_header(conn, "user-agent") |> List.first()
 
+    case Accounts.do_login(user_account_params, client_ip, user_agent) do
+      {:ok, user, session_id} ->
         conn
-        |> put_flash(:info, "Welcome back!")
+        |> put_flash(:info, gettext("Welcome back!"))
         |> configure_session(renew: true)
         |> put_session(:user_id, user.id)
-        |> put_session(:password_updated_at, ts)
+        |> put_session(:session_id, session_id)
         |> redirect(to: ~p"/")
 
-      {:error, :invalid_credentials} ->
+      {:error, reason} ->
         changeset =
           %UserAccount{}
           |> Accounts.login_changeset(user_account_params)
-          |> Ecto.Changeset.add_error(:email, "Invalid email or password")
           |> Map.put(:action, :insert)
 
-        changeset = update_in(changeset.params, &Map.delete(&1, "password"))
-
-        conn
-        |> put_status(:unauthorized)
-        |> render(:log_in, changeset: changeset)
+        handle_login_error(conn, reason, changeset)
     end
   end
 
-  def log_out(conn, _params) do
+  defp handle_login_error(conn, :invalid_credentials, changeset) do
+    changeset = Ecto.Changeset.add_error(changeset, :email, "Invalid email or password")
+
     conn
+    |> put_status(:unauthorized)
+    |> render(:log_in, changeset: changeset)
+  end
+
+  defp handle_login_error(conn, :too_many_attempts, changeset) do
+    conn
+    |> put_status(:too_many_requests)
+    |> put_flash(:error, "Too many requests. Please try again later.")
+    |> render(:log_in, changeset: changeset)
+  end
+
+  def log_out(conn, _params) do
+    user_id = get_session(conn, :user_id)
+    session_id = get_session(conn, :session_id)
+
+    Sessions.delete_session(user_id, session_id)
+
+    conn
+    |> clear_session()
     |> put_flash(:info, "Logged out successfully.")
-    |> configure_session(drop: true)
     |> redirect(to: ~p"/")
   end
 

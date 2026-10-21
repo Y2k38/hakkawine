@@ -8,7 +8,7 @@ CREATE TABLE tickets (
     priority ticket_priority NOT NULL DEFAULT 'medium',
     subscription_id bigint,
     subject varchar(255) NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT NOW(),
+    inserted_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -25,7 +25,7 @@ CREATE TABLE ticket_messages (
     refer_id bigint,
     is_sensitive boolean NOT NULL DEFAULT FALSE,
     content text NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT NOW()
+    inserted_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_ticket_messages_ticket_id ON ticket_messages (ticket_id);
@@ -41,7 +41,7 @@ CREATE TABLE ticket_attachments (
     file_path varchar(512) NOT NULL,
     file_size bigint NOT NULL,
     file_type varchar(100) NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT NOW()
+    inserted_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_attachments_ticket_id ON ticket_attachments (ticket_id);
