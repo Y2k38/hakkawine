@@ -3,7 +3,6 @@
 init:
 	mix deps.get
 	mix deps.compile
-	mix ua_inspector.download
 	mix assets.setup
 	mix ecto.setup
 
