@@ -19,7 +19,7 @@ defmodule Hakkawine.Repo.Migrations.CreateAuditTables do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :user_id, :bigint, null: false
       add :action_code, :string, size: 50, null: false
-      add :ip_address, :inet
+      add :ip_address, :string, size: 45
       add :user_agent, :text
       add :metadata, :map, default: "{}"
 
@@ -38,7 +38,7 @@ defmodule Hakkawine.Repo.Migrations.CreateAuditTables do
       add :action_code, :string, size: 50, null: false
       add :target_type, :string, size: 50
       add :target_id, :bigint
-      add :ip_address, :inet
+      add :ip_address, :string, size: 45
       add :user_agent, :text
       add :metadata, :map, default: "{}"
 
