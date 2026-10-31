@@ -11,8 +11,6 @@ defmodule Hakkawine.Utils.UserAgent do
     }
   end
 
-  def parse(_), do: %{browser: nil, browser_version: nil, os: nil, os_version: nil, device: nil}
-
   defp format_version(%UAParser.Version{} = v) do
     [v.major, v.minor, v.patch, v.patch_minor]
     |> Enum.reject(&is_nil/1)

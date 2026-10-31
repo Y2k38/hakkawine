@@ -43,6 +43,15 @@ defmodule Hakkawine.Sessions do
     execute_transaction(commands)
   end
 
+  def valid_session?(user_id, session_id) when not is_nil(user_id) and not is_nil(session_id) do
+    case get_session(user_id, session_id) do
+      {:ok, _session} -> true
+      _ -> false
+    end
+  end
+
+  def valid_session?(_, _), do: false
+
   def get_session(user_id, session_id) do
     session_key = session_key(session_id)
 
@@ -158,7 +167,7 @@ defmodule Hakkawine.Sessions do
           Enum.reject(session_list, fn s -> s["session_id"] == current_session_id end)
 
         if Enum.empty?(other_sessions) do
-          :ok
+          {:ok, []}
         else
           other_session_ids = Enum.map(other_sessions, & &1["session_id"])
           other_session_keys = Enum.map(other_session_ids, &session_key/1)
@@ -171,7 +180,13 @@ defmodule Hakkawine.Sessions do
             ["EXEC"]
           ]
 
-          execute_transaction(commands)
+          case execute_transaction(commands) do
+            :ok ->
+              {:ok, other_sessions}
+
+            error ->
+              error
+          end
         end
 
       {:error, reason} ->

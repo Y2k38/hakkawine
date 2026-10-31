@@ -6,7 +6,7 @@ defmodule HakkawineWeb.PlanController do
   alias Hakkawine.Subscription
 
   def index(conn, _params) do
-    user = conn.assigns[:current_user]
+    user_id = conn.assigns.user_id
 
     plans = Catalog.list_active_plans() |> Repo.preload(:prices)
 
@@ -14,7 +14,7 @@ defmodule HakkawineWeb.PlanController do
     one_time_plans = Enum.filter(plans, &(&1.charge_type == :one_time))
 
     current_sub =
-      Subscription.get_active_recurring_subscription(user.id) |> Repo.preload(:product)
+      Subscription.get_active_recurring_subscription(user_id) |> Repo.preload(:product)
 
     conn
     |> render(

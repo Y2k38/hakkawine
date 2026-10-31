@@ -7,7 +7,7 @@ defmodule HakkawineWeb.PageController do
   alias Hakkawine.Subscription
 
   def index(conn, _params) do
-    if conn.assigns[:current_user] do
+    if conn.assigns.user_id do
       redirect(conn, to: ~p"/home")
     else
       redirect(conn, to: ~p"/auth/log_in")
@@ -15,9 +15,8 @@ defmodule HakkawineWeb.PageController do
   end
 
   def home(conn, _params) do
-    user = conn.assigns[:current_user]
-
-    subs = Subscription.list_valid_subscriptions(user.id) |> Repo.preload(:product)
+    user_id = conn.assigns.user_id
+    subs = Subscription.list_valid_subscriptions(user_id) |> Repo.preload(:product)
 
     billing_summaries =
       Map.new(subs, fn sub ->
@@ -26,9 +25,9 @@ defmodule HakkawineWeb.PageController do
 
     total_remaining = Enum.sum_by(billing_summaries, fn {_, data} -> data.remaining end)
 
-    user_balance = Billing.get_user_balance(user.id)
+    user_balance = Billing.get_user_balance(user_id)
 
-    checkin_today = Marketing.get_today_user_checkin(user.id)
+    checkin_today = Marketing.get_today_user_checkin(user_id)
     checkin_today_count = Marketing.count_today_checkins()
 
     render(conn, :home,

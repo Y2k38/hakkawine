@@ -16,10 +16,16 @@ defmodule HakkawineWeb.UserAccountLive.Components.AccountComponent do
   end
 
   def handle_event("logout_session", %{"session_id" => session_id}, socket) do
-    user_id = socket.assigns.user_id
+    user_id = socket.assigns[:user_id]
 
     case Sessions.delete_session(user_id, session_id) do
       :ok ->
+        HakkawineWeb.Endpoint.broadcast(
+          "user_session:#{user_id}:#{session_id}",
+          "disconnect",
+          %{}
+        )
+
         updated_list =
           Enum.reject(socket.assigns.session_list, fn s -> s["session_id"] == session_id end)
 
@@ -46,7 +52,16 @@ defmodule HakkawineWeb.UserAccountLive.Components.AccountComponent do
     session_id = socket.assigns.session_id
 
     case Sessions.delete_other_sessions(user_id, session_id) do
-      :ok ->
+      {:ok, deleted_sessions} ->
+        Enum.each(deleted_sessions, fn other_session ->
+          other_session_id = other_session["session_id"]
+          HakkawineWeb.Endpoint.broadcast(
+            "user_session:#{user_id}:#{other_session_id}",
+            "disconnect",
+            %{}
+          )
+        end)
+
         current_session =
           Enum.find(socket.assigns.session_list, fn s -> s["session_id"] == session_id end)
 
@@ -84,9 +99,9 @@ defmodule HakkawineWeb.UserAccountLive.Components.AccountComponent do
   end
 
   defp load_data_by_type(socket, "session_list") do
-    user = socket.assigns.current_user
+    user_id = socket.assigns.user_id
 
-    with {:ok, session_list} <- Sessions.list_user_sessions(user.id) do
+    with {:ok, session_list} <- Sessions.list_user_sessions(user_id) do
       log_ids = Enum.map(session_list, & &1["log_id"])
 
       logs_map =

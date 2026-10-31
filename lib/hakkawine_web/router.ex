@@ -2,7 +2,7 @@ defmodule HakkawineWeb.Router do
   use HakkawineWeb, :router
 
   alias HakkawineWeb.Plugs.BlockQqWechat
-  alias HakkawineWeb.Plugs.FetchCurrentUser
+  alias HakkawineWeb.Plugs.InitSessionAssigns
   alias HakkawineWeb.Plugs.EnsureAuthenticated
   alias HakkawineWeb.Plugs.RedirectIfAuthenticated
 
@@ -16,7 +16,7 @@ defmodule HakkawineWeb.Router do
     plug :put_secure_browser_headers
 
     plug BlockQqWechat
-    plug FetchCurrentUser
+    plug InitSessionAssigns
   end
 
   # Guest
@@ -114,7 +114,7 @@ defmodule HakkawineWeb.Router do
     live_session :user_app,
       layout: {HakkawineWeb.Layouts, :app},
       on_mount: [
-        {FetchCurrentUser, :fetch_current_user}
+        HakkawineWeb.Live.Hooks.InitSessionAssigns
       ] do
       live "/account", UserAccountLive.Index, :index
     end

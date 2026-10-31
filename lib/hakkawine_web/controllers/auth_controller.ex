@@ -3,7 +3,6 @@ defmodule HakkawineWeb.AuthController do
 
   alias Hakkawine.Utils.RequestHelpers
   alias Hakkawine.System
-  alias Hakkawine.Sessions
   alias Hakkawine.Accounts
   alias Hakkawine.Accounts.UserAccount
   alias HakkawineWeb.Plugs.RedisRateLimiter
@@ -149,9 +148,10 @@ defmodule HakkawineWeb.AuthController do
       {:ok, user, session_id} ->
         conn
         |> put_flash(:info, gettext("Welcome back!"))
-        |> configure_session(renew: true)
         |> put_session(:user_id, user.id)
+        |> put_session(:email, user.email)
         |> put_session(:session_id, session_id)
+        |> configure_session(renew: true)
         |> redirect(to: ~p"/")
 
       {:error, reason} ->
@@ -183,7 +183,7 @@ defmodule HakkawineWeb.AuthController do
     user_id = get_session(conn, :user_id)
     session_id = get_session(conn, :session_id)
 
-    Sessions.delete_session(user_id, session_id)
+    Accounts.log_out(user_id, session_id)
 
     conn
     |> clear_session()

@@ -6,13 +6,13 @@ defmodule HakkawineWeb.TrafficController do
   alias Hakkawine.Stats.TrafficForm
 
   def sub_usage(conn, %{"sub_id" => sub_id} = params) do
-    user = conn.assigns[:current_user]
+    user_id = conn.assigns.user_id
 
     changeset = TrafficForm.changeset(%TrafficForm{}, params)
 
     case Ecto.Changeset.apply_action(changeset, :cast) do
       {:ok, form} ->
-        subscription = Subscription.get_for_user(user.id, sub_id)
+        subscription = Subscription.get_for_user(user_id, sub_id)
 
         {aligned_start, aligned_end, interval_minutes, summary, traffic_data} =
           Stats.get_subscription_traffic_chart(subscription, form)

@@ -7,9 +7,9 @@ defmodule HakkawineWeb.OrderController do
     fallback_url = Map.get(params, "fallback_url", ~p"/")
     safe_url = if String.starts_with?(fallback_url, "/"), do: fallback_url, else: ~p"/"
 
-    user = conn.assigns.current_user
+    user_id = conn.assigns.user_id
 
-    case Billing.create_order(user, params) do
+    case Billing.create_order(user_id, params) do
       {:ok, _order} ->
         conn
         |> put_flash(:info, "Order created successfully!")

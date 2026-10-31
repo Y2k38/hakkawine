@@ -94,7 +94,7 @@
             href={~p"/account"}
             class="btn btn-sm btn-outline font-semibold normal-case border-base-300"
           >
-            <% text = (@current_user && @current_user.email) || "Account" %>
+            <% text = @email || "Account" %>
 
             <span class="sm:hidden">
               {String.first(text)}

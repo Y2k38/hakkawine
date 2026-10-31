@@ -2,6 +2,7 @@ defmodule Hakkawine.Accounts do
   import Ecto.Query
 
   alias Hakkawine.Repo
+  alias Hakkawine.Sessions
   alias Hakkawine.Accounts.UserAccount
   alias Hakkawine.Accounts.Services.Registration
   alias Hakkawine.Accounts.Services.ResetPassword
@@ -27,6 +28,10 @@ defmodule Hakkawine.Accounts do
   defdelegate reset_password_changeset(user_account, attrs \\ %{}), to: UserAccount
   defdelegate verify_reset_token(token), to: ResetPassword
   defdelegate reset_password(attrs \\ %{}), to: ResetPassword
+
+  def log_out(user_id, session_id) do
+    Sessions.delete_session(user_id, session_id)
+  end
 
   defp get_user_base(user_id) do
     UserAccount

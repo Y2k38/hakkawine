@@ -32,9 +32,9 @@ defmodule Hakkawine.Billing do
     |> Repo.one()
   end
 
-  def create_order(user, params \\ %{}) do
+  def create_order(user_id, params \\ %{}) do
     with {:ok, form} <- CheckoutForm.parse(params),
-         {:ok, order_attrs} <- build_order_attrs(user, form) do
+         {:ok, order_attrs} <- build_order_attrs(user_id, form) do
       changeset = Order.changeset(%Order{}, order_attrs)
 
       multi =
@@ -63,7 +63,7 @@ defmodule Hakkawine.Billing do
     end
   end
 
-  defp build_order_attrs(user, %{order_type: "plan_purchase"} = form) do
+  defp build_order_attrs(user_id, %{order_type: "plan_purchase"} = form) do
     plan = Catalog.get_plan_by_code(form.target_product_code)
 
     case Enum.find(plan.prices, &(to_string(&1.type) == form.billing_cycle)) do
@@ -78,7 +78,7 @@ defmodule Hakkawine.Billing do
 
         after_discount = Decimal.sub(subtotal, discount) |> Decimal.max(Decimal.new(0))
 
-        balance_deduct = calculate_balance_deduct(user, form.use_balance, after_discount)
+        balance_deduct = calculate_balance_deduct(user_id, form.use_balance, after_discount)
 
         payable_base = Decimal.sub(after_discount, balance_deduct) |> Decimal.max(Decimal.new(0))
 
@@ -92,7 +92,7 @@ defmodule Hakkawine.Billing do
         else
           {:ok,
            %{
-             user_id: user.id,
+             user_id: user_id,
              type: "plan_purchase",
              status: "pending",
              product_id: plan.id,
@@ -130,10 +130,10 @@ defmodule Hakkawine.Billing do
     end
   end
 
-  defp calculate_balance_deduct(user, use_balance, amount) do
+  defp calculate_balance_deduct(user_id, use_balance, amount) do
     case use_balance do
       val when val in [true, "true"] ->
-        balance = get_user_balance(user.id)
+        balance = get_user_balance(user_id)
         Decimal.min(amount, balance)
 
       _ ->

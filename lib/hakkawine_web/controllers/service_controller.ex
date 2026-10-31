@@ -9,9 +9,9 @@ defmodule HakkawineWeb.ServiceController do
   alias Hakkawine.Utils.TimeUtils
 
   def index(conn, _params) do
-    user = conn.assigns[:current_user]
+    user_id = conn.assigns.user_id
 
-    subs = Subscription.list_history_subscriptions(user.id) |> Repo.preload(:product)
+    subs = Subscription.list_history_subscriptions(user_id) |> Repo.preload(:product)
 
     billing_summaries =
       Map.new(subs, fn sub ->
@@ -27,9 +27,9 @@ defmodule HakkawineWeb.ServiceController do
   end
 
   def details(conn, %{"sub_id" => sub_id}) do
-    user = conn.assigns[:current_user]
+    user_id = conn.assigns.user_id
 
-    sub = Subscription.get_for_user(user.id, sub_id) |> Repo.preload([:product])
+    sub = Subscription.get_for_user(user_id, sub_id) |> Repo.preload([:product])
 
     billing_summary = Subscription.billing_summary(sub)
 

@@ -15,7 +15,8 @@ defmodule HakkawineWeb.Endpoint do
     max_age: 30 * 24 * 60 * 60
   ]
 
-  socket "/live", Phoenix.LiveView.Socket,
+  # socket "/live", Phoenix.LiveView.Socket,
+  socket "/live", HakkawineWeb.Channels.UserSocket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 

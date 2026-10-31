@@ -4,9 +4,9 @@ defmodule HakkawineWeb.CheckinController do
   alias Hakkawine.Marketing
 
   def create(conn, _params) do
-    user = conn.assigns.current_user
+    user_id = conn.assigns.user_id
 
-    case Marketing.do_user_checkin(user.id) do
+    case Marketing.do_user_checkin(user_id) do
       {:ok, checkin} ->
         conn
         |> put_status(:created)

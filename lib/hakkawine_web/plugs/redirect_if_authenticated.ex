@@ -4,7 +4,7 @@ defmodule HakkawineWeb.Plugs.RedirectIfAuthenticated do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    if conn.assigns[:current_user] do
+    if conn.assigns[:session_id] do
       conn
       |> redirect(to: "/")
     else

@@ -8,6 +8,7 @@ defmodule HakkawineWeb.UserAccountLive.Index do
       socket
       |> assign(:user_id, session["user_id"])
       |> assign(:session_id, session["session_id"])
+      |> assign(:email, session["email"])
 
     {:ok, socket}
   end
@@ -39,9 +40,9 @@ defmodule HakkawineWeb.UserAccountLive.Index do
   end
 
   def load_tab_data(socket, "main", _page) do
-    user = socket.assigns.current_user
+    user_id = socket.assigns.user_id
 
-    user_balance = Billing.get_user_balance(user.id)
+    user_balance = Billing.get_user_balance(user_id)
 
     topup_rules = Billing.fetch_all_topup_rules()
 
