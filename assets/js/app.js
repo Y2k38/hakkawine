@@ -29,7 +29,9 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
-  hooks: { ...colocatedHooks },
+  hooks: {
+    ...colocatedHooks,
+  },
 })
 
 // Show progress bar on live navigation and form submits
@@ -80,11 +82,3 @@ if (process.env.NODE_ENV === "development") {
     window.liveReloader = reloader
   })
 }
-
-import { formatTraffic, formatAmount, formatBytesAdaptive } from "./utils.js";
-
-window.HakkawineJS = {
-  formatTraffic,
-  formatAmount,
-  formatBytesAdaptive
-};

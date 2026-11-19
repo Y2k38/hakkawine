@@ -2,22 +2,16 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
   use Ecto.Migration
 
   def up do
-    execute "CREATE TYPE order_type AS ENUM('plan_purchase', 'plan_renew', 'plan_upgrade', 'traffic_reset_fee', 'traffic_addon', 'balance_recharge');"
-
-    execute "CREATE TYPE order_status AS ENUM('pending', 'processing', 'completed', 'cancelled', 'failed', 'refunded', 'disputed');"
-
-    execute "CREATE TYPE billing_cycle AS ENUM('monthly', 'quarterly', 'half_yearly', 'yearly', 'one_time');"
-
     create table(:orders, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :order_no, :string, size: 64, null: false
       add :user_id, :bigint, null: false
-      add :type, :order_type, null: false, default: "plan_purchase"
-      add :status, :order_status, null: false, default: "pending"
+      add :type, :string, size: 20, null: false, default: "plan_purchase"
+      add :status, :string, size: 20, null: false, default: "pending"
       add :product_id, :bigint
       add :product_price_id, :bigint
       add :subscription_id, :bigint
-      add :billing_cycle, :billing_cycle
+      add :billing_cycle, :string, size: 20
       add :subtotal_amount, :decimal, precision: 38, scale: 18, null: false
       add :discount_amount, :decimal, precision: 38, scale: 18, null: false
       add :balance_amount, :decimal, precision: 38, scale: 18, null: false
@@ -36,6 +30,21 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
         default: fragment("NOW()")
       )
     end
+
+    create constraint(:orders, :type_must_be_valid,
+             check:
+               "type IN ('plan_purchase', 'plan_renew', 'plan_upgrade', 'traffic_reset_fee', 'traffic_addon', 'balance_recharge')"
+           )
+
+    create constraint(:orders, :status_must_be_valid,
+             check:
+               "status IN ('pending', 'processing', 'completed', 'cancelled', 'failed', 'refunded', 'disputed')"
+           )
+
+    create constraint(:orders, :billing_cycle_must_be_valid,
+             check:
+               "billing_cycle IN ('monthly', 'quarterly', 'half_yearly', 'yearly', 'one_time')"
+           )
 
     create unique_index(:orders, [:order_no], name: :uk_orders_order_no)
 
@@ -95,13 +104,11 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
              name: :idx_payment_accounts_method
            )
 
-    execute "CREATE TYPE payment_record_status AS ENUM('pending', 'paid', 'failed', 'expired', 'refunded');"
-
     create table(:payment_records, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
-      add :trade_no, :string, size: 128, null: false
-      add :gateway_trade_no, :string, size: 128
-      add :status, :payment_record_status, null: false, default: "pending"
+      add :tx_no, :string, size: 128, null: false
+      add :gateway_tx_no, :string, size: 128
+      add :status, :string, size: 20, null: false, default: "pending"
       add :order_id, :bigint, null: false
       add :user_id, :bigint, null: false
       add :payment_method_id, :bigint, null: false
@@ -119,11 +126,15 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
       )
     end
 
-    create unique_index(:payment_records, [:trade_no], name: :uk_payment_records_trade_no)
+    create constraint(:payment_records, :status_must_be_valid,
+             check: "status IN ('pending', 'paid', 'failed', 'expired', 'refunded')"
+           )
 
-    create unique_index(:payment_records, [:payment_method_id, :gateway_trade_no],
+    create unique_index(:payment_records, [:tx_no], name: :uk_payment_records_tx_no)
+
+    create unique_index(:payment_records, [:payment_method_id, :gateway_tx_no],
              name: :uk_payment_records_gateway_trade,
-             where: "gateway_trade_no IS NOT NULL"
+             where: "gateway_tx_no IS NOT NULL"
            )
 
     create index(:payment_records, [:order_id, :status], name: :idx_payment_records_order_status)
@@ -132,13 +143,11 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
              name: :idx_payment_records_user_status_created
            )
 
-    execute "CREATE TYPE bonus_type AS ENUM('fixed_amount', 'percentage');"
-
     create table(:topup_rules, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :min_amount, :decimal, precision: 38, scale: 18, null: false
       add :max_amount, :decimal, precision: 38, scale: 18
-      add :bonus_type, :bonus_type
+      add :bonus_type, :string, size: 20
       add :bonus_value, :decimal, precision: 38, scale: 18
 
       timestamps(
@@ -146,6 +155,10 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
         default: fragment("NOW()")
       )
     end
+
+    create constraint(:topup_rules, :bonus_type_must_be_valid,
+             check: "bonus_type IN ('fixed_amount', 'percentage')"
+           )
 
     create table(:user_balances, primary_key: false) do
       add :user_id, :bigint, primary_key: true, null: false
@@ -157,12 +170,10 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
       )
     end
 
-    execute "CREATE TYPE balance_log_type AS ENUM('recharge', 'recharge_bonus', 'order_payment', 'order_refund', 'commission_transfer', 'system_bonus', 'system_deduct');"
-
     create table(:user_balance_logs, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :user_id, :bigint, null: false
-      add :action_type, :balance_log_type, null: false
+      add :action_type, :string, size: 20, null: false
       add :before_balance, :decimal, precision: 38, scale: 18, null: false
       add :amount, :decimal, precision: 38, scale: 18, null: false
       add :after_balance, :decimal, precision: 38, scale: 18, null: false
@@ -178,34 +189,23 @@ defmodule Hakkawine.Repo.Migrations.CreateBillingTables do
       )
     end
 
+    create constraint(:user_balance_logs, :action_type_must_be_valid,
+             check:
+               "action_type IN ('recharge', 'recharge_bonus', 'order_payment', 'order_refund', 'commission_transfer', 'system_bonus', 'system_deduct')"
+           )
+
     create index(:user_balance_logs, [:user_id, "inserted_at DESC"],
              name: :idx_balance_logs_user_id
            )
   end
 
   def down do
-    drop_if_exists index(:user_balance_logs, name: :idx_balance_logs_user_id)
-    drop_if_exists index(:payment_records, name: :idx_payment_records_user_status_created)
-    drop_if_exists index(:payment_records, name: :idx_payment_records_order_status)
-    drop_if_exists index(:payment_records, name: :uk_payment_records_gateway_trade)
-    drop_if_exists index(:payment_records, name: :uk_payment_records_trade_no)
-    drop_if_exists index(:payment_accounts, name: :idx_payment_accounts_gateway)
-    drop_if_exists index(:payment_methods, name: :uk_payment_methods_code)
-    drop_if_exists index(:orders, name: :idx_orders_user_status_created)
-    drop_if_exists index(:orders, name: :uk_orders_order_no)
-
     drop_if_exists table(:user_balance_logs)
     drop_if_exists table(:user_balances)
     drop_if_exists table(:topup_rules)
+    drop_if_exists table(:payment_accounts)
     drop_if_exists table(:payment_records)
     drop_if_exists table(:payment_methods)
     drop_if_exists table(:orders)
-
-    execute "DROP TYPE IF EXISTS balance_log_type;"
-    execute "DROP TYPE IF EXISTS bonus_type;"
-    execute "DROP TYPE IF EXISTS payment_record_status;"
-    execute "DROP TYPE IF EXISTS billing_cycle;"
-    execute "DROP TYPE IF EXISTS order_status;"
-    execute "DROP TYPE IF EXISTS order_type;"
   end
 end

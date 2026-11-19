@@ -1,0 +1,385 @@
+<div class="card bg-base-100 shadow-sm border border-base-300">
+  <div class="card-body space-y-4">
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <h2 class="card-title text-base font-bold">Traffic Usage</h2>
+
+        <div class="flex gap-2 shrink-0">
+          <button
+            type="button"
+            id="btn-node-usage"
+            class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+            phx-click="show_node_traffic_usage"
+          >
+            Node Usage
+          </button>
+
+          <a
+            href={~p"/subscriptions/#{@sub.id}/export"}
+            target="_blank"
+            id="btn-export-excel"
+            class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+          >
+            Export Excel
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <.async_result :let={traffic_usage} assign={@traffic_usage}>
+      <:loading>
+        <div class="space-y-4">
+          <div class="grid grid-cols-3 gap-4 py-2 text-sm border-y border-base-300/40">
+            <div>
+              <div class="text-xs text-base-content/60 mb-1">Upload</div>
+              <div class="font-semibold text-base text-base-content/30">--</div>
+            </div>
+            <div>
+              <div class="text-xs text-base-content/60 mb-1">Download</div>
+              <div class="font-semibold text-base text-base-content/30">--</div>
+            </div>
+            <div>
+              <div class="text-xs text-base-content/60 mb-1">Total</div>
+              <div class="font-semibold text-base text-base-content/30">--</div>
+            </div>
+          </div>
+
+          <div class="bg-base-200/30 rounded-2xl p-4 border border-base-300/40 space-y-3">
+            <div class="text-xs text-base-content/50">
+              5-minute granularity · Drag horizontally to select range and zoom
+            </div>
+            <div class="h-64 w-full flex flex-col items-center justify-center bg-base-200/50 rounded-2xl border border-base-300/40">
+              <span class="loading loading-spinner loading-md text-base-content/40"></span>
+              <span class="text-xs text-base-content/40 mt-2">Loading traffic data...</span>
+            </div>
+          </div>
+        </div>
+      </:loading>
+
+      <:failed :let={_reason}>
+        <div class="h-64 w-full flex items-center justify-center bg-error/10 text-error rounded-2xl text-xs border border-error/20">
+          Failed to load traffic chart data. Please refresh.
+        </div>
+      </:failed>
+
+      <p class="text-xs text-base-content/60">
+        <span id="traffic_usage_desc">
+          <%= if @active_period == :current do %>
+            This billing cycle (max 31 days)
+          <% else %>
+            Last 31 days
+          <% end %>
+        </span>
+        · 5-minute granularity
+        <span id="traffic_usage_time_range">
+          <%= if @custom_start_time != nil do %>
+            · Current summary: {traffic_usage.aligned_start} to {traffic_usage.aligned_end}
+          <% end %>
+        </span>
+      </p>
+
+      <div class="flex items-center gap-2" id="period-switch-group">
+        <button
+          type="button"
+          class={[
+            "btn btn-xs period-btn",
+            if(@active_period == :current,
+              do: "btn-neutral font-medium",
+              else: "btn-ghost bg-base-200/60 font-normal"
+            )
+          ]}
+          phx-click="change_sub_traffic_period"
+          phx-value-active_period="current"
+          aria-pressed={@active_period == :current}
+        >
+          This Billing Cycle
+        </button>
+        <button
+          type="button"
+          class={[
+            "btn btn-xs period-btn",
+            if(@active_period == :last_31d,
+              do: "btn-neutral font-medium",
+              else: "btn-ghost bg-base-200/60 font-normal"
+            )
+          ]}
+          phx-click="change_sub_traffic_period"
+          phx-value-active_period="last_31d"
+          aria-pressed={@active_period == :last_31d}
+        >
+          Last 31 Days
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-3 gap-4 py-2 text-sm border-y border-base-300/40">
+          <div>
+            <div class="text-xs text-base-content/60 mb-1">Upload</div>
+            <div class="font-semibold text-base" id="summary-upload">
+              {format_traffic(traffic_usage.summary.upload)}
+            </div>
+          </div>
+          <div>
+            <div class="text-xs text-base-content/60 mb-1">Download</div>
+            <div class="font-semibold text-base" id="summary-download">
+              {format_traffic(traffic_usage.summary.download)}
+            </div>
+          </div>
+          <div>
+            <div class="text-xs text-base-content/60 mb-1">Total</div>
+            <div class="font-semibold text-base" id="summary-total">
+              {format_traffic(traffic_usage.summary.total)}
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-base-200/30 rounded-2xl p-4 border border-base-300/40 space-y-3">
+          <div class="text-xs text-base-content/50">
+            5-minute granularity · Drag horizontally to select range and zoom
+          </div>
+
+          <div class="space-y-3">
+            <div
+              id="sub-traffic-chart"
+              phx-hook=".SubTrafficChart"
+              phx-update="ignore"
+              data-active-period={@active_period}
+              data-traffic-usage={Jason.encode!(traffic_usage.list)}
+              class="h-64 w-full rounded-2xl overflow-hidden"
+            >
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-base-content/60 pt-1">
+              <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" style="background-color: #fbbd23;"></span>Total
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" style="background-color: #9ca3af;"></span>Upload
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full" style="background-color: #3abff8;"></span>Download
+                </span>
+              </div>
+              <span id="chart-range-label">
+                <%= if @custom_start_time != nil do %>
+                  {traffic_usage.aligned_start} to {traffic_usage.aligned_end}
+                <% else %>
+                  {traffic_usage.aligned_start} to Present
+                <% end %>
+                Peak Peak {format_traffic(traffic_usage.summary.peak)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </.async_result>
+  </div>
+  <script :type={Phoenix.LiveView.ColocatedHook} name=".SubTrafficChart">
+    import { formatBytesAdaptive } from "@/js/helpers";
+
+    export default {
+      async mounted() {
+        const echarts = await import('echarts');
+
+        this.chart = echarts.init(this.el);
+
+        this.resizeHandler = () => {
+          if (this.chart && !this.chart.isDisposed()) {
+            this.chart.resize();
+          }
+        };
+
+        this.chart.on("brushselected", (params) => {
+          const area = params.batch?.[0]?.areas?.[0];
+          if (!area?.coordRange) return;
+
+          const [start, end] = area.coordRange;
+
+          const option = this.chart.getOption();
+          const fullTimes = option.xAxis[0].data;
+
+          const startIndex = Math.max(0, Math.floor(Math.min(start, end)));
+          const endIndex = Math.min(
+            fullTimes.length - 1,
+            Math.ceil(Math.max(start, end))
+          );
+
+          const startTime = fullTimes[startIndex];
+          const endTime = fullTimes[endIndex];
+
+          if (!startTime || !endTime) return;
+
+          this.pushEvent("change_sub_traffic_time_range", {
+            active_period: this.el.dataset.activePeriod,
+            custom_start_time: startTime,
+            custom_end_time: endTime
+          });
+        });
+
+        this.renderChart();
+      },
+
+      destroy() {
+        if (this.resizeHandler) {
+          window.removeEventListener("resize", this.resizeHandler);
+        }
+        if (this.chart) {
+          this.chart.dispose();
+        }
+      },
+
+      updated() {
+        this.renderChart();
+      },
+
+      renderChart() {
+        let data = JSON.parse(this.el.dataset.trafficUsage || "[]");
+
+        if (!data || data.length === 0) {
+          this.chart.showLoading({
+            text: "No data available",
+            color: "transparent",
+            textColor: "#9ca3af",
+            maskColor: "rgba(255, 255, 255, 0.8)",
+          });
+          return;
+        }
+
+        const times = data.map((item) => item.time);
+        const totals = data.map((item) => item.total);
+        const uploads = data.map((item) => item.upload);
+        const downloads = data.map((item) => item.download);
+
+        let spanHours = 24;
+        if (times.length >= 2) {
+          const start = new Date(times[0]).getTime();
+          const end = new Date(times[times.length - 1]).getTime();
+          spanHours = (end - start) / (1000 * 60 * 60);
+        }
+
+        this.chart.setOption(
+          {
+            tooltip: {
+              trigger: "axis",
+              axisPointer: {
+                type: "line",
+                axis: "auto",
+                snap: true,
+                label: { show: false },
+              },
+              formatter: (params) => {
+                let rawTime = params[0].axisValue;
+                let displayTime = rawTime.replace("T", " ").substring(0, 16);
+                let result = `<div style="font-weight: bold; margin-bottom: 4px;">${displayTime}</div>`;
+                params.forEach((item) => {
+                  const valStr = formatBytesAdaptive(item.value);
+                  result += `${item.marker} ${item.seriesName}: <b>${valStr}</b><br/>`;
+                });
+                return result;
+              },
+            },
+            grid: {
+              top: 16,
+              bottom: 16,
+              left: 36,
+              right: 36,
+              containLabel: true,
+            },
+            xAxis: {
+              type: "category",
+              boundaryGap: false,
+              data: times,
+              axisLabel: {
+                formatter: (value) => {
+                  const monthDay = value.substring(5, 10);
+                  const timeHourMin = value.substring(11, 16);
+                  if (spanHours > 48) {
+                    return monthDay;
+                  } else if (spanHours > 24) {
+                    return `${monthDay} ${timeHourMin}`;
+                  } else {
+                    return timeHourMin;
+                  }
+                },
+                hideOverlap: true,
+                interval: (index, _) => {
+                  const total = times.length;
+                  if (total <= 8) return true;
+                  const step = Math.round(total / 8);
+                  return index % step === 0;
+                },
+              },
+              axisTick: { alignWithLabel: true },
+              axisPointer: {
+                label: { show: false },
+              },
+            },
+            yAxis: {
+              type: "value",
+              axisLabel: { show: false },
+              axisPointer: {
+                label: { show: false },
+              },
+            },
+            // brush
+            brush: {
+              xAxisIndex: 0,
+              brushType: "lineX",
+              throttleType: "debounce",
+              throttleDelay: 300,
+              outOfBrush: {
+                colorAlpha: 0.3
+              }
+            },
+
+            // remove the icon in the upper right corner
+            toolbox: {
+              show: false
+            },
+            series: [
+              {
+                name: "Upload",
+                type: "line",
+                data: uploads,
+                itemStyle: { color: "#9ca3af" },
+                large: true,
+                showSymbol: false,
+                sampling: 'lttb',
+              },
+              {
+                name: "Download",
+                type: "line",
+                data: downloads,
+                itemStyle: { color: "#3abff8" },
+                large: true,
+                showSymbol: false,
+                sampling: 'lttb',
+              },
+              {
+                name: "Total",
+                type: "line",
+                data: totals,
+                itemStyle: { color: "#fbbd23" },
+                large: true,
+                showSymbol: false,
+                sampling: 'lttb',
+              },
+            ],
+          },
+          true,
+        );
+
+        // brush
+        this.chart.dispatchAction({
+          type: 'takeGlobalCursor',
+          key: 'brush',
+          brushOption: {
+            brushType: 'lineX',
+            brushMode: 'single'
+          }
+        });
+      }
+    }
+  </script>
+</div>

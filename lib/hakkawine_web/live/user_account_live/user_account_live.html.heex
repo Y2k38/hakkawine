@@ -1,0 +1,85 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold">My Account</h1>
+    <p class="text-sm text-base-content/60 mt-1">
+      Account, balance top-up, notifications, and billing records
+    </p>
+  </div>
+
+  <div class="flex gap-2 mb-6">
+    <button
+      class={[
+        "btn btn-sm font-medium",
+        @current_tab == "account" && "btn-neutral",
+        @current_tab != "account" && "btn-ghost bg-base-200/60 font-normal"
+      ]}
+      phx-click="switch_tab"
+      phx-value-tab="account"
+    >
+      Account & Top-up
+    </button>
+    <button
+      class={[
+        "btn btn-sm font-medium",
+        @current_tab == "billing" && "btn-neutral",
+        @current_tab != "billing" && "btn-ghost bg-base-200/60 font-normal"
+      ]}
+      phx-click="switch_tab"
+      phx-value-tab="billing"
+    >
+      Billing Records
+    </button>
+  </div>
+
+  <%= if @current_tab == "account" do %>
+    <.live_component
+      module={HakkawineWeb.UserAccountLive.Components.AccountComponent}
+      id="account-widget"
+      user_id={@user_id}
+      session_id={@session_id}
+      email={@email}
+      user_balance={@user_balance}
+      topup_rules={@topup_rules}
+    />
+
+    <%= case @active_modal do %>
+      <% "balance_logs" -> %>
+        <.live_component
+          module={HakkawineWeb.UserAccountLive.Components.BalanceLogsModal}
+          id="balance-logs"
+          show_modal={@show_modal}
+          modal_title={@modal_title}
+        />
+      <% "change_email" -> %>
+        <.live_component
+          module={HakkawineWeb.UserAccountLive.Components.ChangeEmailModal}
+          id="change-email"
+          show_modal={@show_modal}
+          modal_title={@modal_title}
+        />
+      <% "change_pass" -> %>
+        <.live_component
+          module={HakkawineWeb.UserAccountLive.Components.ChangePassModal}
+          id="change-pass"
+          show_modal={@show_modal}
+          modal_title={@modal_title}
+        />
+      <% "session_list" -> %>
+        <.live_component
+          module={HakkawineWeb.UserAccountLive.Components.SessionListModal}
+          id="session-list"
+          show_modal={@show_modal}
+          modal_title={@modal_title}
+          session_id={@session_id}
+          session_list={@session_list}
+        />
+      <% _ -> %>
+        <div></div>
+    <% end %>
+  <% else %>
+    <.live_component
+      module={HakkawineWeb.UserAccountLive.Components.BillingComponent}
+      id="billing-widget"
+    />
+  <% end %>
+</div>

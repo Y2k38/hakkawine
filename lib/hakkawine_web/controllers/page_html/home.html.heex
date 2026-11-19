@@ -110,7 +110,9 @@
             <div class="flex-1 min-w-[110px]">
               <div class="text-base-content/60 text-xs mb-1">AFF Commission</div>
               <div class="font-bold text-base">
-                {currency_symbol()}{format_amount(@commission_balance)}
+                {currency_symbol()}{format_amount(
+                  (@user_commissions && @user_commissions.commission_balance) || 0
+                )}
               </div>
               <a href={~p"/affiliate"} class="text-xs hover:underline">Affiliate Center →</a>
             </div>
@@ -214,7 +216,7 @@
                 </div>
               </div>
               <div>
-                <%= if @checkin_today == nil do %>
+                <%= if @subs != [] and @checkin_today == nil do %>
                   <a
                     id="btn-user-checkin"
                     class="btn btn-warning text-warning-content btn-sm px-6 font-medium"
@@ -226,22 +228,31 @@
               </div>
             </div>
 
-            <%= if @checkin_today == nil do %>
-              <p class="text-xs text-base-content/60 leading-relaxed">
-                Check-in to randomly win traffic rewards, valid only for the current billing cycle.
-              </p>
-            <% else %>
-              <div class="bg-success/10 border border-success/20 px-4 py-3 rounded-xl flex items-center justify-between text-xs">
-                <div class="font-semibold text-success flex items-center gap-1.5">
-                  <span>Checked in</span>
-                </div>
-                <div class="text-base-content/70">
-                  Claimed
-                  <span class="font-bold text-success">{format_traffic(
-                    @checkin_today.traffic_amount
-                  )}</span>
-                </div>
+            <%= if @subs == [] do %>
+              <div class="text-xs text-base-content/60 leading-relaxed flex items-center gap-1.5 flex-wrap">
+                <span>An active subscription is required to check in.</span>
+                <a href={~p"/plans"} class="link link-primary font-medium whitespace-nowrap">
+                  Get a plan &rarr;
+                </a>
               </div>
+            <% else %>
+              <%= if @checkin_today == nil do %>
+                <p class="text-xs text-base-content/60 leading-relaxed">
+                  Check-in to randomly win traffic rewards, valid only for the current billing cycle.
+                </p>
+              <% else %>
+                <div class="bg-success/10 border border-success/20 px-4 py-3 rounded-xl flex items-center justify-between text-xs">
+                  <div class="font-semibold text-success flex items-center gap-1.5">
+                    <span>Checked in</span>
+                  </div>
+                  <div class="text-base-content/70">
+                    Claimed
+                    <span class="font-bold text-success">{format_traffic(
+                      @checkin_today.traffic_amount
+                    )}</span>
+                  </div>
+                </div>
+              <% end %>
             <% end %>
           </div>
 

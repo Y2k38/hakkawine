@@ -15,6 +15,8 @@ defmodule Hakkawine.Subscription.UserSubscription do
     field :status, Ecto.Enum, values: [:active, :expired, :exhausted, :suspended, :cancelled]
     field :billing_cycle, Ecto.Enum, values: Order.billing_cycles()
     field :billing_day, :integer
+    field :is_auto_renew, :boolean
+    field :is_auto_reset_quota, :boolean
     field :snap_limit_device_count, :integer
     field :snap_limit_speed_mbps, :integer
     field :snap_limit_speed_up_mbps, :integer
@@ -49,5 +51,10 @@ defmodule Hakkawine.Subscription.UserSubscription do
     |> cast(attrs, [:extra_quota_bytes])
     |> validate_required([:extra_quota_bytes])
     |> validate_number(:extra_quota_bytes, greater_than_or_equal_to: 0)
+  end
+
+  def settings_changeset(user_subscription, attrs \\ %{}) do
+    user_subscription
+    |> cast(attrs, [:is_auto_renew, :is_auto_reset_quota])
   end
 end

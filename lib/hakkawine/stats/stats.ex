@@ -60,13 +60,13 @@ defmodule Hakkawine.Stats do
 
   defp resolve_raw_time_range(sub, form) do
     cond do
-      form.start_time && form.end_time ->
-        {form.start_time, form.end_time}
+      form.custom_start_time && form.custom_end_time ->
+        {form.custom_start_time, form.custom_end_time}
 
-      form.period == :current ->
+      form.active_period == :current ->
         Subscription.calculate_current_billing_window(sub, :stats)
 
-      form.period == :last_31d ->
+      form.active_period == :last_31d ->
         now = DateTime.utc_now()
         start_dt = DateTime.add(now, -31, :day)
         {start_dt, now}
@@ -101,8 +101,8 @@ defmodule Hakkawine.Stats do
             t.bucket_5m,
             type(^aligned_start, :utc_datetime)
           ),
-        up: fragment("COALESCE(SUM(?), 0)::bigint", t.rated_upload_bytes),
-        down: fragment("COALESCE(SUM(?), 0)::bigint", t.rated_download_bytes),
+        upload: fragment("COALESCE(SUM(?), 0)::bigint", t.rated_upload_bytes),
+        download: fragment("COALESCE(SUM(?), 0)::bigint", t.rated_download_bytes),
         total: fragment("COALESCE(SUM(?), 0)::bigint", t.rated_total_bytes)
       }
     )
@@ -128,8 +128,8 @@ defmodule Hakkawine.Stats do
         row =
           Map.get(row_map, current, %{
             time: current,
-            up: 0,
-            down: 0,
+            upload: 0,
+            download: 0,
             total: 0
           })
 
@@ -147,25 +147,25 @@ defmodule Hakkawine.Stats do
     raw_rows =
       list_subscription_traffic_buckets(sub, aligned_start, aligned_end, interval_minutes)
 
-    {total_up, total_down, total_traffic, peak_total} =
+    {upload, download, total, peak} =
       Enum.reduce(raw_rows, {0, 0, 0, 0}, fn row, {u, d, t, p} ->
         {
-          u + row.up,
-          d + row.down,
+          u + row.upload,
+          d + row.download,
           t + row.total,
           max(p, row.total)
         }
       end)
 
     summary = %{
-      total_up: total_up,
-      total_down: total_down,
-      total_traffic: total_traffic,
-      peak_total: peak_total
+      peak: peak,
+      total: total,
+      upload: upload,
+      download: download
     }
 
-    traffic_data = fill_missing_buckets(raw_rows, aligned_start, aligned_end, interval_minutes)
+    list = fill_missing_buckets(raw_rows, aligned_start, aligned_end, interval_minutes)
 
-    {aligned_start, aligned_end, interval_minutes, summary, traffic_data}
+    {aligned_start, aligned_end, interval_minutes, summary, list}
   end
 end

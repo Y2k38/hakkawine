@@ -10,10 +10,10 @@ defmodule Hakkawine.Billing.Drivers.Epay do
 
     base = %{
       "money" => amount,
-      "name" => payment_record.trade_no,
+      "name" => payment_record.tx_no,
       "notify_url" => config["notify_url"],
       "return_url" => config["return_url"],
-      "out_trade_no" => payment_record.trade_no,
+      "out_tx_no" => payment_record.tx_no,
       "pid" => config["pid"]
     }
 
@@ -47,8 +47,8 @@ defmodule Hakkawine.Billing.Drivers.Epay do
          true <- Plug.Crypto.secure_compare(String.downcase(expected_sign), calculated_sign) do
       {:ok,
        %{
-         trade_no: params["out_trade_no"],
-         gateway_trade_no: params["trade_no"]
+         tx_no: params["out_tx_no"],
+         gateway_tx_no: params["tx_no"]
        }}
     else
       _ -> {:error, :invalid_signature}

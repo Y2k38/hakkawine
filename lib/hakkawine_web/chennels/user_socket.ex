@@ -18,7 +18,6 @@ defmodule HakkawineWeb.Channels.UserSocket do
     session_id = socket.assigns[:session_id]
 
     if user_id && session_id do
-      # if user_id && session_id && Sessions.valid_session?(user_id, session_id) do
       "user_session:#{user_id}:#{session_id}"
     else
       nil

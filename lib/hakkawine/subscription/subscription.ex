@@ -21,6 +21,8 @@ defmodule Hakkawine.Subscription do
       status: :active,
       billing_cycle: order.billing_cycle,
       billing_day: started_at.day,
+      is_auto_renew: false,
+      is_auto_reset_quota: false,
       snap_limit_device_count: 0,
       snap_limit_speed_mbps: 0,
       snap_limit_speed_up_mbps: 0,
@@ -48,6 +50,14 @@ defmodule Hakkawine.Subscription do
     UserSubscription
     |> where(user_id: ^user_id)
     |> where(id: ^sub_id)
+    |> Repo.one()
+  end
+
+  def get_for_user_locked(user_id, sub_id) do
+    UserSubscription
+    |> where(user_id: ^user_id)
+    |> where(id: ^sub_id)
+    |> lock("FOR UPDATE")
     |> Repo.one()
   end
 
@@ -271,5 +281,49 @@ defmodule Hakkawine.Subscription do
     sub
     |> UserSubscription.extra_traffic_changeset(%{extra_quota_bytes: new_extra_quota})
     |> Repo.update()
+  end
+
+  def toggle_auto_renewal(user_id, sub_id) do
+    Repo.transaction(fn ->
+      case get_for_user_locked(user_id, sub_id) do
+        nil ->
+          Repo.rollback(:not_found)
+
+        sub ->
+          new_status = !sub.is_auto_renew
+
+          changeset = UserSubscription.settings_changeset(sub, %{is_auto_renew: new_status})
+
+          case Repo.update(changeset) do
+            {:ok, updated_sub} ->
+              updated_sub
+
+            {:error, changeset} ->
+              Repo.rollback(changeset)
+          end
+      end
+    end)
+  end
+
+  def toggle_quota_auto_reset(user_id, sub_id) do
+    Repo.transaction(fn ->
+      case get_for_user_locked(user_id, sub_id) do
+        nil ->
+          Repo.rollback(:not_found)
+
+        sub ->
+          new_status = !sub.is_auto_reset_quota
+
+          changeset = UserSubscription.settings_changeset(sub, %{is_auto_reset_quota: new_status})
+
+          case Repo.update(changeset) do
+            {:ok, updated_sub} ->
+              updated_sub
+
+            {:error, changeset} ->
+              Repo.rollback(changeset)
+          end
+      end
+    end)
   end
 end

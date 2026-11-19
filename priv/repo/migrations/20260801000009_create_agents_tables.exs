@@ -15,14 +15,12 @@ defmodule Hakkawine.Repo.Migrations.CreateAgentsTables do
 
     create unique_index(:obfs_domains, [:domain], name: :uk_obfs_domains_domain)
 
-    execute "CREATE TYPE agent_status AS ENUM('pending', 'active', 'offline', 'disabled');"
-
     create table(:agents, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :name, :string, size: 32, null: false
       add :client_id, :string, size: 64, null: false
       add :client_secret_hash, :string, size: 255, null: false
-      add :status, :agent_status, null: false, default: "pending"
+      add :status, :string, size: 20, null: false, default: "pending"
       add :address, :string, size: 255, null: false
       add :protocol, :string, size: 16, null: false
       add :port_base, :integer, null: false
@@ -40,6 +38,10 @@ defmodule Hakkawine.Repo.Migrations.CreateAgentsTables do
         default: fragment("NOW()")
       )
     end
+
+    create constraint(:agents, :status_must_be_valid,
+             check: "status IN ('pending', 'active', 'offline', 'disabled')"
+           )
 
     create unique_index(:agents, [:client_id], name: :uk_agents_client_id)
 
@@ -73,17 +75,8 @@ defmodule Hakkawine.Repo.Migrations.CreateAgentsTables do
   end
 
   def down do
-    drop_if_exists index(:agent_allocations, name: :idx_agent_allocations_agent_id)
-    drop_if_exists index(:agent_allocations, name: :uk_agent_allocations_sub_slot)
-    drop_if_exists index(:agents, name: :idx_agents_labels)
-    drop_if_exists index(:agents, name: :idx_agents_status)
-    drop_if_exists index(:agents, name: :uk_agents_client_id)
-    drop_if_exists index(:obfs_domains, name: :uk_obfs_domains_domain)
-
     drop_if_exists table(:agent_allocations)
     drop_if_exists table(:agents)
     drop_if_exists table(:obfs_domains)
-
-    execute "DROP TYPE IF EXISTS agent_status;"
   end
 end

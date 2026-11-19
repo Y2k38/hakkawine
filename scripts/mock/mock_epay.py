@@ -31,7 +31,7 @@ async def submit(request: Request):
     params = dict(request.query_params)
     query_str = str(request.query_params)
 
-    out_trade_no = params.get("out_trade_no", "N/A")
+    out_tx_no = params.get("out_tx_no", "N/A")
     money = params.get("money", "0.00")
 
     html_content = f"""
@@ -44,7 +44,7 @@ async def submit(request: Request):
     <body style="font-family: system-ui, -apple-system, sans-serif; padding: 40px; max-width: 500px; margin: 0 auto; color: #111827;">
       <h2 style="margin-bottom: 20px;">⚡ Mock Payment Cashier</h2>
       <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-        <p style="margin: 6px 0;"><b>Merchant Order No.:</b> {out_trade_no}</p>
+        <p style="margin: 6px 0;"><b>Merchant Order No.:</b> {out_tx_no}</p>
         <p style="margin: 6px 0;"><b>Amount:</b> ${money}</p>
       </div>
       <a href="/pay_success?{query_str}" style="text-decoration: none;">
@@ -65,8 +65,8 @@ async def pay_success(request: Request):
 
     notify_params = {
         "pid": params.get("pid", "1000"),
-        "trade_no": f"MOCK_{int(time.time() * 1000)}",
-        "out_trade_no": params.get("out_trade_no", ""),
+        "tx_no": f"MOCK_{int(time.time() * 1000)}",
+        "out_tx_no": params.get("out_tx_no", ""),
         "type": params.get("type", "alipay"),
         "name": params.get("name", "Test Item"),
         "money": params.get("money", "0.00"),

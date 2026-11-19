@@ -1,6 +1,7 @@
 defmodule HakkawineWeb.PageController do
   use HakkawineWeb, :controller
 
+  alias Hakkawine.Affiliate
   alias Hakkawine.Marketing
   alias Hakkawine.Billing
   alias Hakkawine.Repo
@@ -27,6 +28,8 @@ defmodule HakkawineWeb.PageController do
 
     user_balance = Billing.get_user_balance(user_id)
 
+    user_commissions = Affiliate.get_user_commissions(user_id)
+
     checkin_today = Marketing.get_today_user_checkin(user_id)
     checkin_today_count = Marketing.count_today_checkins()
 
@@ -35,7 +38,7 @@ defmodule HakkawineWeb.PageController do
       billing_summaries: billing_summaries,
       total_remaining: total_remaining,
       user_balance: user_balance,
-      commission_balance: 0,
+      user_commissions: user_commissions,
       checkin_today: checkin_today,
       checkin_today_count: checkin_today_count
     )

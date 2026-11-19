@@ -147,10 +147,10 @@ defmodule HakkawineWeb.AuthController do
     case Accounts.do_login(user_account_params, client_ip, user_agent) do
       {:ok, user, session_id} ->
         conn
-        |> put_flash(:info, gettext("Welcome back!"))
         |> put_session(:user_id, user.id)
-        |> put_session(:email, user.email)
         |> put_session(:session_id, session_id)
+        |> put_session(:email, user.email)
+        |> put_session(:language, user.language)
         |> configure_session(renew: true)
         |> redirect(to: ~p"/")
 

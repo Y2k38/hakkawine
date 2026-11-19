@@ -2,18 +2,14 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
   use Ecto.Migration
 
   def up do
-    execute "CREATE TYPE product_type AS ENUM('plan', 'addon');"
-    execute "CREATE TYPE product_status AS ENUM('draft', 'active', 'archived');"
-    execute "CREATE TYPE charge_type AS ENUM('recurring', 'one_time');"
-
     create table(:products, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :code, :string, size: 64, null: false
       add :name, :string, size: 64, null: false
       add :description, :string
-      add :type, :product_type, null: false, default: "plan"
-      add :status, :product_status, null: false, default: "draft"
-      add :charge_type, :charge_type, null: false, default: "recurring"
+      add :type, :string, size: 20, null: false, default: "plan"
+      add :status, :string, size: 20, null: false, default: "draft"
+      add :charge_type, :string, size: 20, null: false, default: "recurring"
       add :tier_rank, :integer, null: false
       add :is_recommended, :boolean, null: false, default: false
       add :sort_order, :integer, null: false, default: 0
@@ -29,17 +25,25 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
       )
     end
 
+    create constraint(:products, :type_must_be_valid, check: "type IN ('plan', 'addon')")
+
+    create constraint(:products, :status_must_be_valid,
+             check: "status IN ('draft', 'active', 'archived')"
+           )
+
+    create constraint(:products, :charge_type_must_be_valid,
+             check: "charge_type IN ('recurring', 'one_time')"
+           )
+
     create unique_index(:products, [:code, :status],
              name: :uk_products_code_unique_draft_active,
              where: "status IN ('draft', 'active')"
            )
 
-    execute "CREATE TYPE price_type AS ENUM( 'monthly', 'quarterly', 'half_yearly', 'yearly', 'onetime', 'reset');"
-
     create table(:product_prices, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :product_id, :bigint, null: false
-      add :type, :price_type, null: false, default: "monthly"
+      add :type, :string, size: 20, null: false, default: "monthly"
       add :amount, :decimal, precision: 38, scale: 18, null: false
       add :sort_order, :integer, null: false, default: 0
       add :is_default, :boolean, null: false, default: false
@@ -49,6 +53,11 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
         default: fragment("NOW()")
       )
     end
+
+    create constraint(:product_prices, :type_must_be_valid,
+             check:
+               "type IN ('monthly', 'quarterly', 'half_yearly', 'yearly', 'onetime', 'reset')"
+           )
 
     create index(:product_prices, [:product_id], name: :idx_product_prices_product_id)
 
@@ -65,17 +74,8 @@ defmodule Hakkawine.Repo.Migrations.CreateCatalogTables do
   end
 
   def down do
-    drop_if_exists index(:plan_slots, name: :uk_plan_slots_product_slot_name)
-    drop_if_exists index(:product_prices, name: :idx_product_prices_product_id)
-    drop_if_exists index(:products, name: :uk_products_code_unique_draft_active)
-
     drop_if_exists table(:plan_slots)
     drop_if_exists table(:product_prices)
     drop_if_exists table(:products)
-
-    execute "DROP TYPE IF EXISTS price_type;"
-    execute "DROP TYPE IF EXISTS charge_type;"
-    execute "DROP TYPE IF EXISTS product_status;"
-    execute "DROP TYPE IF EXISTS product_type;"
   end
 end

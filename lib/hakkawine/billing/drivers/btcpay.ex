@@ -18,7 +18,7 @@ defmodule Hakkawine.Billing.Drivers.Btcpay do
       "amount" => amount,
       "currency" => config["currency"],
       "metadata" => %{
-        "orderId" => payment_record.trade_no
+        "orderId" => payment_record.tx_no
       },
       "checkout" => %{
         "redirectURL" => config["return_url"]
@@ -53,14 +53,14 @@ defmodule Hakkawine.Billing.Drivers.Btcpay do
     if Plug.Crypto.secure_compare(sig_header, expected_sig) do
       event_type = Map.get(params, "type")
       invoice_id = Map.get(params, "invoiceId")
-      trade_no = get_in(params, ["metadata", "orderId"])
+      tx_no = get_in(params, ["metadata", "orderId"])
 
       case event_type do
         "InvoiceSettled" ->
           {:ok,
            %{
-             trade_no: trade_no,
-             gateway_trade_no: invoice_id
+             tx_no: tx_no,
+             gateway_tx_no: invoice_id
            }}
 
         _ ->

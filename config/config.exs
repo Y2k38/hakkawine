@@ -26,9 +26,7 @@ config :hakkawine, Hakkawine.Mailer, adapter: Swoosh.Adapters.Local
 config :phoenix,
   json_library: Jason,
   static_compressors: [
-    PhoenixBakery.Gzip,
-    PhoenixBakery.Brotli,
-    PhoenixBakery.Zstd
+    Hakkawine.Utils.BrotliCompressor
   ]
 
 config :gettext, :default_locale, "en"
@@ -38,10 +36,25 @@ config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 config :esbuild,
   version: "0.28.2",
   hakkawine: [
-    args:
-      ~w(js/app.js js/chart.js --bundle --format=esm --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
+    args: ~w(
+      js/app.js
+      --bundle
+      --format=esm
+      --splitting
+      --target=es2022
+      --outdir=../priv/static/assets/js
+      --external:/fonts/*
+      --external:/images/*
+      --alias:@=.
+    ),
     cd: Path.expand("../assets", __DIR__),
-    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
+    env: %{
+      "NODE_PATH" => [
+        Path.expand("../deps", __DIR__),
+        Path.expand("../assets/node_modules", __DIR__),
+        Mix.Project.build_path()
+      ]
+    }
   ]
 
 config :tailwind,
@@ -52,7 +65,12 @@ config :tailwind,
       --output=priv/static/assets/css/app.css
     ),
     cd: Path.expand("..", __DIR__),
-    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
+    env: %{
+      "NODE_PATH" => [
+        Path.expand("../deps", __DIR__),
+        Mix.Project.build_path()
+      ]
+    }
   ]
 
 config :hakkawine, Oban,

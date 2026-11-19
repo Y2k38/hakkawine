@@ -6,5 +6,5 @@ defmodule Hakkawine.Billing.Driver do
               {:ok, url :: String.t()} | {:error, term()}
 
   @callback notify(config(), params :: map()) ::
-              {:ok, %{trade_no: String.t(), gateway_trade_no: String.t()}} | {:error, term()}
+              {:ok, %{tx_no: String.t(), gateway_tx_no: String.t()}} | {:error, term()}
 end

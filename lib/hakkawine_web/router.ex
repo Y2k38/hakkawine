@@ -3,6 +3,7 @@ defmodule HakkawineWeb.Router do
 
   alias HakkawineWeb.Plugs.BlockQqWechat
   alias HakkawineWeb.Plugs.InitSessionAssigns
+  alias HakkawineWeb.Plugs.SetLocale
   alias HakkawineWeb.Plugs.EnsureAuthenticated
   alias HakkawineWeb.Plugs.RedirectIfAuthenticated
 
@@ -23,6 +24,7 @@ defmodule HakkawineWeb.Router do
   pipeline :guest_browser do
     plug :browser_base
     plug RedirectIfAuthenticated
+    plug SetLocale
   end
 
   # Logged-in user
@@ -30,6 +32,7 @@ defmodule HakkawineWeb.Router do
     plug :browser_base
     plug :put_layout, html: {HakkawineWeb.Layouts, :app}
     plug EnsureAuthenticated
+    plug SetLocale
   end
 
   # Admin
@@ -76,16 +79,13 @@ defmodule HakkawineWeb.Router do
     pipe_through [:user_browser]
 
     get "/home", PageController, :home
-    get "/plans", PlanController, :index
     get "/tickets", TicketController, :index
     get "/tickets/new", TicketController, :new
     get "/knowledges", KnowledgeController, :index
     get "/announcements", AnnouncementController, :index
-    get "/affiliate", AffiliateController, :index
 
     # Subscription
     get "/services", ServiceController, :index
-    get "/services/:sub_id", ServiceController, :details
     get "/subscriptions/:sub_id/usage", TrafficController, :sub_usage
     get "/subscriptions/:sub_id/node-stats", TrafficController, :sub_node_stats
     get "/subscriptions/:sub_id/export", TrafficController, :sub_export
@@ -114,9 +114,13 @@ defmodule HakkawineWeb.Router do
     live_session :user_app,
       layout: {HakkawineWeb.Layouts, :app},
       on_mount: [
-        HakkawineWeb.Live.Hooks.InitSessionAssigns
+        HakkawineWeb.Live.Hooks.InitSessionAssigns,
+        HakkawineWeb.Live.Hooks.SetLocale
       ] do
-      live "/account", UserAccountLive.Index, :index
+      live "/account", UserAccountLive
+      live "/plans", PlansLive
+      live "/services/:sub_id", UserSubscriptionLive
+      live "/affiliate", AffiliateLive
     end
   end
 

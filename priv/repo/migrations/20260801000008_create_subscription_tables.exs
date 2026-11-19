@@ -2,17 +2,17 @@ defmodule Hakkawine.Repo.Migrations.CreateSubscriptionTables do
   use Ecto.Migration
 
   def up do
-    execute "CREATE TYPE subscription_status AS ENUM('active', 'expired', 'exhausted', 'suspended', 'cancelled');"
-
     create table(:user_subscriptions, primary_key: false) do
       add :id, :bigint, primary_key: true, generated: "BY DEFAULT AS IDENTITY"
       add :user_id, :bigint, null: false
       add :product_id, :bigint, null: false
       add :product_price_id, :bigint, null: false
       add :uuid, :uuid, null: false, default: fragment("gen_random_uuid()")
-      add :status, :subscription_status, null: false, default: "active"
-      add :billing_cycle, :billing_cycle, null: false
+      add :status, :string, size: 20, null: false, default: "active"
+      add :billing_cycle, :string, size: 20, null: false
       add :billing_day, :integer, null: false
+      add :is_auto_renew, :boolean, null: false, default: false
+      add :is_auto_reset_quota, :boolean, null: false, default: false
       add :snap_limit_device_count, :integer
       add :snap_limit_speed_mbps, :integer
       add :snap_limit_speed_up_mbps, :integer
@@ -27,6 +27,15 @@ defmodule Hakkawine.Repo.Migrations.CreateSubscriptionTables do
         default: fragment("NOW()")
       )
     end
+
+    create constraint(:user_subscriptions, :status_must_be_valid,
+             check: "status IN ('active', 'expired', 'exhausted', 'suspended', 'cancelled')"
+           )
+
+    create constraint(:user_subscriptions, :billing_cycle_must_be_valid,
+             check:
+               "billing_cycle IN ('monthly', 'quarterly', 'half_yearly', 'yearly', 'one_time')"
+           )
 
     create unique_index(:user_subscriptions, [:uuid], name: :uk_user_subscriptions_uuid)
 
@@ -64,15 +73,7 @@ defmodule Hakkawine.Repo.Migrations.CreateSubscriptionTables do
   end
 
   def down do
-    drop_if_exists index(:proxy_templates, name: :uk_proxy_templates_single_active)
-    drop_if_exists index(:proxy_templates, name: :uk_proxy_templates_code)
-    drop_if_exists index(:user_subscriptions, name: :idx_user_subscriptions_expired_at)
-    drop_if_exists index(:user_subscriptions, name: :idx_user_subscriptions_user_status)
-    drop_if_exists index(:user_subscriptions, name: :uk_user_subscriptions_uuid)
-
     drop_if_exists table(:proxy_templates)
     drop_if_exists table(:user_subscriptions)
-
-    execute "DROP TYPE IF EXISTS subscription_status;"
   end
 end

@@ -33,9 +33,6 @@ defmodule Hakkawine.Repo.Migrations.CreateSystemTables do
   end
 
   def down do
-    drop_if_exists index(:agent_labels, name: :uk_agent_labels_category_key)
-    drop_if_exists index(:settings, name: :idx_settings_section)
-
     drop_if_exists table(:agent_labels)
     drop_if_exists table(:settings)
   end

@@ -13,7 +13,7 @@ defmodule Hakkawine.Billing.Drivers.EpusdtNative do
       |> Decimal.to_float()
 
     params = %{
-      "order_id" => payment_record.trade_no,
+      "order_id" => payment_record.tx_no,
       "amount" => amount,
       "redirect_url" => config["return_url"],
       "notify_url" => config["notify_url"]
@@ -48,8 +48,8 @@ defmodule Hakkawine.Billing.Drivers.EpusdtNative do
       if status == 2 do
         {:ok,
          %{
-           trade_no: Map.get(params, "order_id"),
-           gateway_trade_no: Map.get(params, "trade_id")
+           tx_no: Map.get(params, "order_id"),
+           gateway_tx_no: Map.get(params, "trade_id")
          }}
       else
         {:error, :payment_not_successful}

@@ -8,8 +8,8 @@ defmodule Hakkawine.Billing.PaymentRecord do
 
   @primary_key {:id, :id, autogenerate: true}
   schema "payment_records" do
-    field :trade_no, :string
-    field :gateway_trade_no, :string
+    field :tx_no, :string
+    field :gateway_tx_no, :string
     field :status, Ecto.Enum, values: [:pending, :paid, :failed, :expired, :refunded]
     field :order_id, :integer
     field :user_id, :integer
@@ -28,7 +28,7 @@ defmodule Hakkawine.Billing.PaymentRecord do
   def changeset(payment_records, attrs) do
     payment_records
     |> cast(attrs, [
-      :gateway_trade_no,
+      :gateway_tx_no,
       :status,
       :order_id,
       :user_id,
@@ -52,12 +52,12 @@ defmodule Hakkawine.Billing.PaymentRecord do
       :gateway_currency,
       :gateway_amount
     ])
-    |> put_trade_no()
+    |> put_tx_no()
   end
 
-  defp put_trade_no(changeset) do
-    case get_field(changeset, :trade_no) do
-      nil -> put_change(changeset, :trade_no, SequenceNo.generate())
+  defp put_tx_no(changeset) do
+    case get_field(changeset, :tx_no) do
+      nil -> put_change(changeset, :tx_no, SequenceNo.generate())
       _ -> changeset
     end
   end

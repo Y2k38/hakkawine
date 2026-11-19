@@ -5,7 +5,7 @@ defmodule Hakkawine.MixProject do
     [
       app: :hakkawine,
       version: "0.1.0",
-      elixir: "~> 1.17",
+      elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -15,9 +15,6 @@ defmodule Hakkawine.MixProject do
     ]
   end
 
-  # Configuration for the OTP application.
-  #
-  # Type `mix help compile.app` for more information.
   def application do
     [
       mod: {Hakkawine.Application, []},
@@ -31,13 +28,9 @@ defmodule Hakkawine.MixProject do
     ]
   end
 
-  # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Specifies your project dependencies.
-  #
-  # Type `mix help deps` for examples and options.
   defp deps do
     [
       {:phoenix, "~> 1.8.9"},
@@ -60,7 +53,7 @@ defmodule Hakkawine.MixProject do
        depth: 1},
       {:daisyui,
        github: "saadeghi/daisyui",
-       tag: "v5.7.47",
+       tag: "v5.7.50",
        sparse: "packages/bundle",
        app: false,
        compile: false,
@@ -73,27 +66,29 @@ defmodule Hakkawine.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.3"},
       {:bandit, "~> 1.8"},
-      {:phoenix_bakery, "~> 1.0"},
-      {:tz, "~> 0.28.2"},
-      {:ecto_network, "~> 1.6.1"},
-      {:argon2_elixir, "~> 4.0"},
-      {:redix, "~> 1.1"},
-      {:castore, "~> 1.0", runtime: false},
-      {:remote_ip, "~> 1.2"},
-      {:dotenvy, "~> 1.0", only: [:dev]},
+      # Background and asynchronous job processing
       {:oban, "~> 2.23"},
-      {:igniter, "~> 0.5", only: [:dev]},
+      # Redis client
+      {:redix, "~> 1.1"},
+      # Password hashing and encryption
+      {:argon2_elixir, "~> 4.0"},
+      # Timezone and time formatting
+      {:tz, "~> 0.28.2"},
+      # PostgreSQL network address types
+      {:ecto_network, "~> 1.6.1"},
+      # Client IP address handling
+      {:remote_ip, "~> 1.2"},
+      # User-Agent parsing (browser, OS, and device detection)
       {:ua_parser, "~> 1.8"},
-      {:locus, "~> 2.3"}
+      # Geolocation and IP-based location lookup
+      {:locus, "~> 2.3"},
+      # Compression and static file handling
+      {:brotli, "~> 0.3.4"},
+      # Environment variable management (development only)
+      {:dotenvy, "~> 1.0", only: [:dev]}
     ]
   end
 
-  # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to install project dependencies and perform other setup tasks, run:
-  #
-  #     $ mix setup
-  #
-  # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
       setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
@@ -118,9 +113,7 @@ defmodule Hakkawine.MixProject do
   end
 
   def copy_vendor_js(_args \\ nil) do
-    js_files = [
-      "echarts.min.js"
-    ]
+    js_files = []
 
     source_dir = "assets/vendor"
     target_dir = "priv/static/assets/js"

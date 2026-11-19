@@ -13,7 +13,7 @@ defmodule Hakkawine.Affiliate.UserCommission do
 
   def changeset(user_commission, attrs) do
     user_commission
-    |> cast(attrs, [:commission_balance, :total_earned])
-    |> validate_required([:commission_balance, :total_earned])
+    |> cast(attrs, [:user_id, :commission_balance, :total_earned])
+    |> validate_required([:user_id, :commission_balance, :total_earned])
   end
 end

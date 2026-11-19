@@ -5,29 +5,34 @@ defmodule HakkawineWeb.Helpers.NumberHelper do
     System.get_setting("symbol")
   end
 
-  def format_amount(nil), do: "0"
+  def format_amount(amount, scale \\ 2)
 
-  def format_amount(%Decimal{} = decimal) do
+  def format_amount(nil, _scale), do: "0.00"
+
+  def format_amount(%Decimal{} = decimal, scale) do
     decimal
     |> Decimal.to_float()
-    |> format_amount()
+    |> format_amount(scale)
   end
 
-  def format_amount(amount) when is_float(amount) do
-    if amount == Float.floor(amount) do
-      trunc(amount) |> Integer.to_string()
-    else
-      :erlang.float_to_binary(amount, decimals: 2)
-    end
+  def format_amount(amount, scale) when is_integer(amount) do
+    :erlang.float_to_binary(amount * 1.0, decimals: scale)
   end
 
-  def format_amount(amount) when is_integer(amount), do: Integer.to_string(amount)
+  def format_amount(amount, scale) when is_float(amount) do
+    :erlang.float_to_binary(amount, decimals: scale)
+  end
 
-  def format_amount(amount) when is_binary(amount) do
-    case Decimal.parse(amount) do
-      {decimal, _} -> format_amount(decimal)
-      :error -> amount
-    end
+  def to_percentage(nil), do: "0%"
+
+  def to_percentage(decimal_value) do
+    percentage =
+      decimal_value
+      |> Decimal.mult(Decimal.new(100))
+      |> Decimal.round(0)
+      |> Decimal.to_integer()
+
+    "#{percentage}%"
   end
 
   def format_traffic(bytes, precision \\ 2)

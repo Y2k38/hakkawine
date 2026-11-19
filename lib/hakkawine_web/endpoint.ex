@@ -28,7 +28,8 @@ defmodule HakkawineWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :hakkawine,
-    gzip: not code_reloading?,
+    gzip: false,
+    brotli: not code_reloading?,
     only: HakkawineWeb.static_paths(),
     raise_on_missing_only: code_reloading?
 

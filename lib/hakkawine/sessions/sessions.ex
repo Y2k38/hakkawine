@@ -1,4 +1,6 @@
 defmodule Hakkawine.Sessions do
+  alias Hakkawine.Utils.RedisExt
+
   # - Min Age (Sliding Window): 7 days
   # - Max Age (Hard Limit): 30 days
   # - Refresh Strategy: Lazy refresh on requests, with background cleanup every 1-4 hours.
@@ -40,7 +42,7 @@ defmodule Hakkawine.Sessions do
       ["EXEC"]
     ]
 
-    execute_transaction(commands)
+    RedisExt.execute_transaction(commands)
   end
 
   def valid_session?(user_id, session_id) when not is_nil(user_id) and not is_nil(session_id) do
@@ -143,7 +145,7 @@ defmodule Hakkawine.Sessions do
       ["EXEC"]
     ]
 
-    execute_transaction(commands)
+    RedisExt.execute_transaction(commands)
   end
 
   def delete_session(user_id, session_id) do
@@ -157,7 +159,7 @@ defmodule Hakkawine.Sessions do
       ["EXEC"]
     ]
 
-    execute_transaction(commands)
+    RedisExt.execute_transaction(commands)
   end
 
   def delete_other_sessions(user_id, current_session_id) do
@@ -180,8 +182,8 @@ defmodule Hakkawine.Sessions do
             ["EXEC"]
           ]
 
-          case execute_transaction(commands) do
-            :ok ->
+          case RedisExt.execute_transaction(commands) do
+            {:ok, _responses} ->
               {:ok, other_sessions}
 
             error ->
@@ -196,27 +198,4 @@ defmodule Hakkawine.Sessions do
 
   defp session_key(session_id), do: "auth:session:#{session_id}"
   defp user_sessions_key(user_id), do: "auth:user:sessions:#{user_id}"
-
-  defp execute_transaction(commands) do
-    case Redix.pipeline(:redix, commands) do
-      {:ok, responses} ->
-        case List.last(responses) do
-          nil ->
-            {:error, :transaction_aborted}
-
-          exec_results when is_list(exec_results) ->
-            if Enum.any?(exec_results, &match?(%Redix.Error{}, &1)) do
-              {:error, {:redis_error, exec_results}}
-            else
-              :ok
-            end
-
-          other ->
-            {:error, {:unexpected_response, other}}
-        end
-
-      {:error, reason} ->
-        {:error, {:network_error, reason}}
-    end
-  end
 end

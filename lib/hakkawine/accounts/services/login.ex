@@ -23,7 +23,8 @@ defmodule Hakkawine.Accounts.Services.Login do
          {:ok, user_account} <- authenticate_user(email, password),
          :ok <- RateLimiter.delete_keys([email_5m_key, email_24h_key]),
          {:ok, audit_log} <- Audits.insert_user_login_log(user_account, ip, ua),
-         :ok <- Sessions.create_session(user_account.id, session_id, audit_log.id, now) do
+         {:ok, _responses} <-
+           Sessions.create_session(user_account.id, session_id, audit_log.id, now) do
       {:ok, user_account, session_id}
     else
       :deny ->

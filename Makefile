@@ -16,7 +16,9 @@ run:
 	mix phx.server
 
 release:
+	MIX_ENV=prod mix clean
 	MIX_ENV=prod mix deps.get --only prod
 	MIX_ENV=prod mix deps.compile
+	MIX_ENV=prod mix compile
 	MIX_ENV=prod mix assets.deploy
 	MIX_ENV=prod mix release --overwrite

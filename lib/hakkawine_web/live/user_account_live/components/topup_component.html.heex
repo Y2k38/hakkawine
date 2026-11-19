@@ -16,7 +16,7 @@
             !is_active? && "btn-ghost bg-base-200/60 font-normal hover:bg-base-200"
           ]}
         >
-          {currency_symbol()}{format_amount(rule.min_amount)}
+          {currency_symbol()}{format_amount(rule.min_amount, 0)}
         </button>
       <% end %>
     </div>
@@ -31,7 +31,7 @@
           type="text"
           inputmode="numeric"
           name="balance_amount"
-          value={format_amount(@custom_amount)}
+          value={format_amount(@custom_amount, 0)}
           phx-keyup="update_custom_amount"
           phx-debounce="500"
           phx-target={@myself}
@@ -44,19 +44,20 @@
   <div class="p-6 pt-0 flex items-end justify-between gap-4">
     <div class="text-xs text-base-content/60 space-y-0.5">
       <%= if !is_below_lowest? do %>
-        <div>Pay {currency_symbol()}{format_amount(@custom_amount)}</div>
+        <div>Pay {currency_symbol()}{format_amount(@custom_amount, 0)}</div>
         <%= if Decimal.eq?(@bonus_amount, 0) do %>
           <div>Current amount gets no bonus</div>
         <% else %>
           <div class="text-success font-medium">
-            Bonus {currency_symbol()}{format_amount(@bonus_amount)}, total {currency_symbol()}{format_amount(
-              @total_arrived
+            Bonus {currency_symbol()}{format_amount(@bonus_amount, 0)}, total {currency_symbol()}{format_amount(
+              @total_arrived,
+              0
             )}
           </div>
         <% end %>
       <% else %>
         <div>
-          Minimum top-up: {currency_symbol()}{format_amount(@lowest_amount)} (whole numbers only)
+          Minimum top-up: {currency_symbol()}{format_amount(@lowest_amount, 0)} (whole numbers only)
         </div>
       <% end %>
     </div>

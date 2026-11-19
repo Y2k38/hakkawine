@@ -1,0 +1,334 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold">Service Details</h1>
+    <div class="text-xs text-base-content/60 mb-1">My Services / Service #{@sub.id}</div>
+  </div>
+
+  <%= if @sub.status not in [:active, :exhausted, :suspended] do %>
+    <div class="alert bg-error/10 border border-error/20 rounded-xl p-4 flex flex-col items-start text-left gap-1">
+      <div class="text-sm font-semibold text-error">
+        This service has expired, currently viewable only
+      </div>
+      <div class="text-xs text-base-content/70">
+        Subscription import, copying, renewal, upgrading, resetting and purchasing functions are disabled.
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="space-y-6">
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="card-body space-y-4">
+          <div class="flex items-center justify-between">
+            {@sub.product.name}
+          </div>
+
+          <div class="text-xs text-base-content/60">
+            Service ID #{@sub.id}
+          </div>
+
+          <div class="flex items-center gap-2 text-xs font-medium">
+            <span class={status_color(@sub.status)}>
+              {format_status(@sub.status)}
+            </span>
+          </div>
+
+          <div class="bg-base-200/40 rounded-2xl p-4 border border-base-300/40 space-y-3">
+            <div class="text-xs text-base-content/60">Remaining Traffic This Billing Cycle</div>
+            <div class="text-2xl font-extrabold">
+              {format_traffic(@billing_summary.remaining)}
+            </div>
+            <div class="text-xs text-base-content/60">
+              {100 - @billing_summary.percent}% available · Total {format_traffic(
+                @billing_summary.total
+              )}
+            </div>
+            <div class="flex items-center justify-between text-xs text-base-content/50">
+              <span>Extra traffic {format_traffic(@billing_summary.extra)}</span>
+
+              <button
+                type="button"
+                class="btn btn-xs btn-ghost text-base-content/70 hover:text-base-content gap-1 px-1.5 py-0 font-normal"
+              >
+                <span>Details</span>
+                <span class="text-[10px]">→</span>
+              </button>
+            </div>
+
+            <div class="space-y-1 pt-2">
+              <div class="flex justify-between text-xs text-base-content/70">
+                <span>Used {@billing_summary.percent}%</span>
+                <span>{100 - @billing_summary.percent}% Remaining</span>
+              </div>
+              <progress
+                class="progress progress-success w-full h-2"
+                value={@billing_summary.percent}
+                max="100"
+              ></progress>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-base-300/40 text-xs">
+              <div>
+                <div class="text-base-content/60">Upload</div>
+                <div class="font-semibold mt-0.5">{format_traffic(@billing_summary.up)}</div>
+              </div>
+              <div>
+                <div class="text-base-content/60">Download</div>
+                <div class="font-semibold mt-0.5">{format_traffic(@billing_summary.down)}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between py-1 border-b border-base-300/40">
+              <span class="text-base-content/60">Expiration</span>
+              <span class="font-mono font-medium">{Calendar.strftime(
+                @sub.expired_at,
+                "%Y/%m/%d"
+              )}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-base-300/40">
+              <span class="text-base-content/60">Next Reset</span>
+              <span class="font-medium">
+                <%= if @sub.status == :expired do %>
+                  Expired
+                <% else %>
+                  {in_days_text(@billing_summary.cycle_end)}
+                <% end %>
+              </span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-base-300/40">
+              <span class="text-base-content/60">Current Online</span>
+              <span class="font-mono font-medium">{@online_device_count}/{@sub.snap_limit_device_count}</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="text-base-content/60">Speed Limit</span>
+              <span class="font-mono font-medium">{format_speed(@sub.snap_limit_speed_mbps)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%= if @sub.status in [:active, :exhausted] do %>
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title text-base font-bold">Subscription & Import</h2>
+              <button class="btn btn-xs btn-ghost bg-base-200/60 font-normal">Subscription Records</button>
+            </div>
+
+            <div class="space-y-3">
+              <div class="text-xs text-base-content/50">One-click Import</div>
+              <div class="grid grid-cols-2 gap-2">
+                <a
+                  href={@sub_urls.clash_url}
+                  class="btn btn-sm btn-ghost bg-base-200/40 border border-base-300/60 justify-start font-normal text-xs"
+                >Clash</a>
+                <a
+                  href={@sub_urls.shadowrocket_url}
+                  class="btn btn-sm btn-ghost bg-base-200/40 border border-base-300/60 justify-start font-normal text-xs"
+                >Shadowrocket</a>
+              </div>
+              <div class="text-xs text-base-content/50 pt-1">Or copy subscription link</div>
+              <button
+                type="button"
+                class="btn btn-warning text-warning-content btn-sm w-full font-normal"
+                data-clipboard-url={@sub_urls.base_url}
+                onclick="
+                  const url = this.getAttribute('data-clipboard-url');
+                  navigator.clipboard.writeText(url).then(() => {
+                    const btn = this;
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => { btn.innerText = originalText; }, 2000);
+                  });
+                "
+              >
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="lg:col-span-2 space-y-6">
+      <%= if @sub.status in [:active, :exhausted] do %>
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <h2 class="card-title text-base font-bold">Service Management</h2>
+                <p class="text-xs text-base-content/60 mt-0.5">
+                  Renew, upgrade and security operations
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <%= if @sub.product.charge_type == :recurring do %>
+                  <a
+                    href={~p"/checkout/sub/renew"}
+                    class={
+                      if @expires_in_one_month,
+                        do: "btn btn-sm btn-warning text-warning-content font-medium",
+                        else: "btn btn-sm btn-ghost bg-base-200/60 font-normal"
+                    }
+                  >Renew</a>
+                  <%= if @sub.product.tier_rank < 3 do %>
+                    <a
+                      href={~p"/checkout/sub/upgrade"}
+                      class="btn btn-sm btn-warning text-warning-content font-medium"
+                    >Upgrade Plan</a>
+                  <% end %>
+                  <a
+                    href={~p"/checkout/sub/reset-quota"}
+                    class="btn btn-sm btn-ghost bg-base-200/60 font-normal"
+                  >Reset Traffic</a>
+                <% end %>
+                <a
+                  href={~p"/checkout/sub/reset-quota"}
+                  class="btn btn-sm btn-ghost bg-base-200/60 font-normal text-error"
+                >Reset Subscription Link</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title text-base font-bold">Historical Records</h2>
+              <button class="btn btn-sm btn-ghost bg-base-200/60 font-normal">View Subscription Records</button>
+            </div>
+            <div class="space-y-0.5 text-xs">
+              <div class="text-base-content/60">
+                Service expired, all modification operations are closed
+              </div>
+              <div class="text-base-content/40">Closed</div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body py-5 px-6">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="card-title text-base font-bold">Auto Renewal</h2>
+                  <span class={
+                    if @sub.is_auto_renew,
+                      do: "text-xs font-medium text-success",
+                      else: "text-xs font-normal text-base-content/60"
+                  }>
+                    {if @sub.is_auto_renew, do: "Enabled", else: "Disabled"}
+                  </span>
+                </div>
+                <p class="text-xs text-base-content/60 mt-0.5">
+                  Renew from balance 24 hours before expiration.
+                </p>
+              </div>
+              <label class="cursor-pointer label">
+                <input
+                  type="checkbox"
+                  name="is_auto_renew"
+                  class="toggle toggle-sm"
+                  checked={@sub.is_auto_renew}
+                  phx-click="toggle_auto_renewal"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+          <div class="card-body py-5 px-6">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="card-title text-base font-bold">Auto Reset Quota</h2>
+                  <span class={
+                    if @sub.is_auto_reset_quota,
+                      do: "text-xs font-medium text-success",
+                      else: "text-xs font-normal text-base-content/60"
+                  }>
+                    {if @sub.is_auto_reset_quota, do: "Enabled", else: "Disabled"}
+                  </span>
+                </div>
+                <p class="text-xs text-base-content/60 mt-0.5">
+                  Deduct from balance and reset when traffic is 100% exhausted.
+                </p>
+              </div>
+              <label class="cursor-pointer label">
+                <input
+                  type="checkbox"
+                  name="is_auto_reset_quota"
+                  class="toggle toggle-sm"
+                  checked={@sub.is_auto_reset_quota}
+                  phx-click="toggle_quota_auto_reset"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <.live_component
+        module={HakkawineWeb.UserSubscriptionLive.Components.TrafficUsage}
+        id="traffic_usage"
+        sub={@sub}
+        traffic_usage={@traffic_usage}
+        active_period={@active_period}
+        custom_start_time={@custom_start_time}
+        custom_end_time={@custom_end_time}
+      />
+
+      <div class="card bg-base-100 shadow-sm border border-base-300">
+        <div class="flex items-center justify-between p-6">
+          <div>
+            <h2 class="card-title text-base font-bold">Add-on Traffic Packages</h2>
+            <p class="text-xs text-base-content/60 mt-0.5">
+              Current remaining {100 - @billing_summary.percent}% · Traffic packages are valid only for the current billing cycle
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-sm btn-ghost text-xs font-normal gap-1"
+            phx-click="toggle_addon_list"
+          >
+            <span>{if @show_addon_list, do: "Collapse", else: "Expand"}</span>
+
+            <span class={"inline-block transition-transform duration-200 #{if @show_addon_list, do: "rotate-0", else: "rotate-180"}"}>
+              ▲
+            </span>
+          </button>
+        </div>
+
+        <%= if @show_addon_list do %>
+          <div class="space-y-3 px-6 pb-6 pt-0">
+            <%= for addon <- @addon_list do %>
+              <div class="bg-base-200/40 p-4 rounded-xl border border-base-300/40 flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-sm">{addon.name}</div>
+                  <div class="text-xs text-base-content/60 mt-0.5 font-mono">
+                    {format_traffic(addon.traffic_quota_bytes)}
+                    <span class="text-warning font-semibold">{currency_symbol()}{format_amount(
+                      List.first(addon.prices).amount
+                    )}</span>
+                  </div>
+                </div>
+                <a
+                  href={
+                    ~p"/checkout/addon?subscription_id=#{@sub.id}&target_product_code=#{addon.code}"
+                  }
+                  class="btn btn-sm btn-warning text-warning-content px-6"
+                >Buy</a>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

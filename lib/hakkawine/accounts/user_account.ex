@@ -22,7 +22,6 @@ defmodule Hakkawine.Accounts.UserAccount do
     field :telegram_chat_id, :integer
     field :invited_by, :integer
     field :invite_code, :string
-    field :invite_count, :integer, default: 0
     field :suspended_until, :utc_datetime_usec
 
     # Virtual field used in forms

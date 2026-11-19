@@ -30,7 +30,10 @@ defmodule Hakkawine.Accounts do
   defdelegate reset_password(attrs \\ %{}), to: ResetPassword
 
   def log_out(user_id, session_id) do
-    Sessions.delete_session(user_id, session_id)
+    case Sessions.delete_session(user_id, session_id) do
+      {:ok, _responses} -> :ok
+      error -> error
+    end
   end
 
   defp get_user_base(user_id) do
@@ -63,5 +66,11 @@ defmodule Hakkawine.Accounts do
     get_user_by_email_base(email)
     |> lock("FOR UPDATE")
     |> Repo.one()
+  end
+
+  def count_affiliate_users(user_id) do
+    UserAccount
+    |> where([u], u.invited_by == ^user_id)
+    |> Repo.aggregate(:count, :id)
   end
 end
